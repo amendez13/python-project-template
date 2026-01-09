@@ -1,6 +1,6 @@
 # Branch Protection Configuration
 
-This document describes the branch protection rules configured for the `{{MAIN_BRANCH}}` branch to ensure code quality and prevent accidental or harmful changes.
+This document describes the branch protection rules configured for the `main` branch to ensure code quality and prevent accidental or harmful changes.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ This document describes the branch protection rules configured for the `{{MAIN_B
 | **Private** | ✓ Requires GitHub Pro | Must upgrade to GitHub Pro, GitHub Team, or GitHub Enterprise |
 
 **Current Repository Status:**
-- **Repository:** [{{GITHUB_OWNER}}/{{PROJECT_NAME}}](https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}})
+- **Repository:** Check with `gh repo view --json nameWithOwner -q .nameWithOwner`
 - **Visibility:** [To be determined during setup]
 - **Branch Protection:** [To be configured]
 
@@ -31,7 +31,8 @@ This document describes the branch protection rules configured for the `{{MAIN_B
 
 ### Option B: GitHub CLI One-Liner
 ```bash
-gh api -X PUT /repos/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/branches/{{MAIN_BRANCH}}/protection \
+# Replace <owner>/<repo> with your repository (or use: gh repo view --json nameWithOwner -q .nameWithOwner)
+gh api -X PUT /repos/<owner>/<repo>/branches/main/protection \
   --input scripts/github/branch-protection-config.json
 ```
 
@@ -40,9 +41,9 @@ See [Manual Configuration via GitHub UI](#option-2-manual-configuration-via-gith
 
 ## Overview
 
-Branch protection rules help maintain code quality by requiring specific checks to pass before code can be merged into the `{{MAIN_BRANCH}}` branch. This ensures that all changes are reviewed, tested, and meet quality standards.
+Branch protection rules help maintain code quality by requiring specific checks to pass before code can be merged into the `main` branch. This ensures that all changes are reviewed, tested, and meet quality standards.
 
-## Protection Rules for `{{MAIN_BRANCH}}` Branch
+## Protection Rules for `main` Branch
 
 ### Required Status Checks
 
@@ -62,7 +63,7 @@ All CI checks must pass before merging:
 
 **Configuration:**
 - **Require branches to be up to date before merging**: Enabled
-  - This ensures that PRs are tested against the latest `{{MAIN_BRANCH}}` before merging
+  - This ensures that PRs are tested against the latest `main` before merging
   - Prevents "green build, broken main" scenarios
 
 ### Pull Request Requirements
@@ -97,7 +98,8 @@ All CI checks must pass before merging:
 Run this command to apply the branch protection configuration:
 
 ```bash
-gh api -X PUT /repos/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/branches/{{MAIN_BRANCH}}/protection \
+# Replace <owner>/<repo> with your repository (or use: gh repo view --json nameWithOwner -q .nameWithOwner)
+gh api -X PUT /repos/<owner>/<repo>/branches/main/protection \
   --input scripts/github/branch-protection-config.json
 ```
 
@@ -110,7 +112,7 @@ The configuration file is located at `scripts/github/branch-protection-config.js
 1. Go to the repository on GitHub
 2. Click **Settings** → **Branches**
 3. Under "Branch protection rules", click **Add rule**
-4. Enter branch name pattern: `{{MAIN_BRANCH}}`
+4. Enter branch name pattern: `main`
 5. Configure the following settings:
 
 **Protect matching branches:**
@@ -137,8 +139,8 @@ After applying branch protection, verify it's working correctly:
 ### Check via GitHub CLI
 
 ```bash
-# Check if branch protection is enabled
-gh api /repos/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/branches/{{MAIN_BRANCH}}/protection --jq '.required_status_checks.contexts'
+# Check if branch protection is enabled (replace <owner>/<repo> with your repository)
+gh api /repos/<owner>/<repo>/branches/main/protection --jq '.required_status_checks.contexts'
 
 # Expected output:
 # [
@@ -153,9 +155,9 @@ gh api /repos/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/branches/{{MAIN_BRANCH}}/protect
 
 ### Check via GitHub UI
 
-Visit: https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/settings/branches
+Visit your repository's branch settings at: `https://github.com/<owner>/<repo>/settings/branches`
 
-You should see a protection rule for the `{{MAIN_BRANCH}}` branch with all configured settings.
+You should see a protection rule for the `main` branch with all configured settings.
 
 ### Test with a Pull Request
 
@@ -166,7 +168,7 @@ You should see a protection rule for the `{{MAIN_BRANCH}}` branch with all confi
 5. Verify that:
    - CI checks run automatically
    - Merge button is blocked until checks pass
-   - You cannot force push to `{{MAIN_BRANCH}}`
+   - You cannot force push to `main`
 
 ## Working with Branch Protection
 
@@ -181,16 +183,16 @@ When you create a pull request:
 2. **Merge when ready**
    - All checks must be green
    - All conversations resolved
-   - Branch is up to date with `{{MAIN_BRANCH}}`
+   - Branch is up to date with `main`
 
 ### Merge Strategies
 
 **Recommended: Squash and Merge**
 - Combines all PR commits into a single commit
-- Keeps `{{MAIN_BRANCH}}` history clean and readable
+- Keeps `main` history clean and readable
 
 **Alternative: Rebase and Merge**
-- Replays PR commits on top of `{{MAIN_BRANCH}}`
+- Replays PR commits on top of `main`
 - Maintains individual commit history
 
 **Not Recommended: Merge Commit**
@@ -198,12 +200,12 @@ When you create a pull request:
 
 ### Handling Merge Conflicts
 
-If your PR conflicts with `{{MAIN_BRANCH}}`:
+If your PR conflicts with `main`:
 
 ```bash
 git checkout your-branch
 git fetch origin
-git rebase origin/{{MAIN_BRANCH}}
+git rebase origin/main
 # Resolve conflicts
 git add <resolved-files>
 git rebase --continue
@@ -225,7 +227,8 @@ git push --force-with-lease origin your-branch
 
 1. **Make repository public (Free):**
    ```bash
-   gh repo edit {{GITHUB_OWNER}}/{{PROJECT_NAME}} --visibility public --accept-visibility-change-consequences
+   # Replace <owner>/<repo> with your repository
+   gh repo edit <owner>/<repo> --visibility public --accept-visibility-change-consequences
    ```
 
 2. **Upgrade to GitHub Pro:**
@@ -250,13 +253,13 @@ git push --force-with-lease origin your-branch
 
 **Possible causes:**
 1. Unresolved conversations → Resolve all comments
-2. Branch not up to date → Rebase on `{{MAIN_BRANCH}}`
+2. Branch not up to date → Rebase on `main`
 3. Status check name mismatch → Check exact names
 
 ## Security Considerations
 
 **What branch protection protects against:**
-- Accidental pushes to `{{MAIN_BRANCH}}`
+- Accidental pushes to `main`
 - Merging broken code
 - Force pushing over history
 - Deleting the main branch
@@ -269,7 +272,7 @@ git push --force-with-lease origin your-branch
 ## Best Practices
 
 1. **Always work in feature branches**
-   - Never commit directly to `{{MAIN_BRANCH}}`
+   - Never commit directly to `main`
    - Use descriptive branch names: `feature/add-dark-mode`, `fix/auth-bug`
 
 2. **Keep PRs focused and small**
@@ -278,7 +281,7 @@ git push --force-with-lease origin your-branch
    - Less likely to conflict
 
 3. **Keep your branch up to date**
-   - Regularly rebase on `{{MAIN_BRANCH}}`
+   - Regularly rebase on `main`
    - Avoid long-lived feature branches
 
 ## References

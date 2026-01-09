@@ -5,8 +5,13 @@
 
 set -e  # Exit on error
 
-REPO="{{GITHUB_OWNER}}/{{PROJECT_NAME}}"
-BRANCH="{{MAIN_BRANCH}}"
+# Dynamically detect the current repository and branch
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "")
+if [ -z "$REPO" ]; then
+    echo -e "${RED}Error: Could not detect repository. Make sure you're in a git repo with a GitHub remote.${NC}"
+    exit 1
+fi
+BRANCH="main"
 CONFIG_FILE="$(dirname "$0")/branch-protection-config.json"
 
 # Colors for output
