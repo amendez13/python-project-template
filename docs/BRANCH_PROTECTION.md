@@ -2,6 +2,24 @@
 
 This document describes the branch protection rules configured for the `{{MAIN_BRANCH}}` branch to ensure code quality and prevent accidental or harmful changes.
 
+## Prerequisites
+
+### Repository Visibility Requirements
+
+**Important:** Branch protection rules have different requirements based on repository visibility:
+
+| Repository Type | Branch Protection | Requirements |
+|----------------|-------------------|--------------|
+| **Public** | ✓ Free | No additional requirements |
+| **Private** | ✓ Requires GitHub Pro | Must upgrade to GitHub Pro, GitHub Team, or GitHub Enterprise |
+
+**Current Repository Status:**
+- **Repository:** [{{GITHUB_OWNER}}/{{PROJECT_NAME}}](https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}})
+- **Visibility:** [To be determined during setup]
+- **Branch Protection:** [To be configured]
+
+> **Note:** If you want to keep your repository private and use branch protection, you'll need GitHub Pro or higher. Alternatively, you can make the repository public to use branch protection for free. Without branch protection enforcement, CI will still run on all pushes and PRs, but merging won't be blocked if checks fail.
+
 ## Quick Start
 
 **To apply branch protection, choose one option:**
@@ -85,6 +103,8 @@ gh api -X PUT /repos/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/branches/{{MAIN_BRANCH}}/
 
 The configuration file is located at `scripts/github/branch-protection-config.json`.
 
+**Note:** The automated script (`./scripts/github/setup-branch-protection.sh`) already has the correct repository path configured.
+
 ### Option 2: Manual Configuration via GitHub UI
 
 1. Go to the repository on GitHub
@@ -109,6 +129,44 @@ The configuration file is located at `scripts/github/branch-protection-config.js
 - [x] Include administrators
 
 6. Click **Create** or **Save changes**
+
+## Verifying Branch Protection
+
+After applying branch protection, verify it's working correctly:
+
+### Check via GitHub CLI
+
+```bash
+# Check if branch protection is enabled
+gh api /repos/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/branches/{{MAIN_BRANCH}}/protection --jq '.required_status_checks.contexts'
+
+# Expected output:
+# [
+#   "Lint and Code Quality",
+#   "Test Python 3.10",
+#   "Test Python 3.11",
+#   "Test Python 3.12",
+#   "Validate Configuration",
+#   "CI Status Check"
+# ]
+```
+
+### Check via GitHub UI
+
+Visit: https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/settings/branches
+
+You should see a protection rule for the `{{MAIN_BRANCH}}` branch with all configured settings.
+
+### Test with a Pull Request
+
+1. Create a feature branch: `git checkout -b test/branch-protection`
+2. Make a small change and commit it
+3. Push to GitHub: `git push -u origin test/branch-protection`
+4. Create a PR on GitHub
+5. Verify that:
+   - CI checks run automatically
+   - Merge button is blocked until checks pass
+   - You cannot force push to `{{MAIN_BRANCH}}`
 
 ## Working with Branch Protection
 
@@ -153,6 +211,32 @@ git push --force-with-lease origin your-branch
 ```
 
 ## Troubleshooting
+
+### "Upgrade to GitHub Pro or make this repository public to enable this feature"
+
+**Error:**
+```
+{"message":"Upgrade to GitHub Pro or make this repository public to enable this feature.","status":"403"}
+```
+
+**Cause:** Branch protection on private repositories requires GitHub Pro or higher.
+
+**Solutions:**
+
+1. **Make repository public (Free):**
+   ```bash
+   gh repo edit {{GITHUB_OWNER}}/{{PROJECT_NAME}} --visibility public --accept-visibility-change-consequences
+   ```
+
+2. **Upgrade to GitHub Pro:**
+   - Visit GitHub Settings → Billing
+   - Subscribe to GitHub Pro ($4/month as of 2024)
+   - Includes branch protection for unlimited private repos
+
+3. **Work without branch protection enforcement:**
+   - CI will still run on all pushes and PRs
+   - You'll need to manually verify CI passes before merging
+   - Use discipline to avoid force pushes and direct commits to main
 
 ### "Required status check is expected but not reported"
 
