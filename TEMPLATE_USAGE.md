@@ -69,8 +69,13 @@ python-project-template/
 │   ├── SETUP.md                   # Installation guide
 │   ├── ARCHITECTURE.md            # Technical design
 │   ├── CI.md                      # CI/CD documentation
+│   ├── BRANCH_PROTECTION.md       # Branch protection documentation
 │   └── planning/
 │       └── TASK_MANAGEMENT.md     # Task tracking
+├── scripts/
+│   └── github/
+│       ├── branch-protection-config.json  # Protection rules config
+│       └── setup-branch-protection.sh     # Setup script
 ├── src/                           # Source code
 │   ├── __init__.py
 │   └── main.py
@@ -121,6 +126,23 @@ python-project-template/
 8. end-of-file-fixer
 9. check-yaml
 
+### Branch Protection (`scripts/github/`)
+
+Automated branch protection configuration:
+
+- **Required status checks**: All CI jobs must pass
+- **Linear history**: No merge commits (squash or rebase only)
+- **Conversation resolution**: All review comments must be resolved
+- **Force push protection**: Prevents accidental history overwrites
+- **Deletion protection**: Prevents accidental branch deletion
+
+Setup via `setup_template.py` or manually:
+```bash
+./scripts/github/setup-branch-protection.sh
+```
+
+See `docs/BRANCH_PROTECTION.md` for full documentation.
+
 ### Documentation Structure
 
 - `CLAUDE.md` - AI assistant guidance for Claude Code
@@ -129,6 +151,7 @@ python-project-template/
 - `docs/CI.md` - CI/CD pipeline documentation
 - `docs/SETUP.md` - Installation and configuration guide
 - `docs/ARCHITECTURE.md` - Technical architecture (placeholder)
+- `docs/BRANCH_PROTECTION.md` - Branch protection rules documentation
 - `docs/planning/TASK_MANAGEMENT.md` - Development task tracking
 
 ## Post-Setup Steps

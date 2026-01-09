@@ -85,8 +85,10 @@ FILES_TO_PROCESS: List[str] = [
     "docs/CI.md",
     "docs/SETUP.md",
     "docs/ARCHITECTURE.md",
+    "docs/BRANCH_PROTECTION.md",
     "docs/planning/TASK_MANAGEMENT.md",
     "config/config.example.yaml",
+    "scripts/github/setup-branch-protection.sh",
     "src/__init__.py",
     "src/main.py",
     "tests/__init__.py",
@@ -266,6 +268,60 @@ def install_pre_commit(project_root: Path) -> bool:
         return False
 
 
+def setup_branch_protection(
+    project_root: Path, github_owner: str, project_name: str, main_branch: str
+) -> bool:
+    """Configure branch protection rules via GitHub API.
+
+    Args:
+        project_root: Root directory of the project.
+        github_owner: GitHub username or organization.
+        project_name: Repository name.
+        main_branch: Name of the main branch.
+
+    Returns:
+        True if successful, False otherwise.
+    """
+    # Check if gh CLI is available
+    try:
+        subprocess.run(
+            ["gh", "auth", "status"],
+            capture_output=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("  Warning: GitHub CLI not authenticated or not installed")
+        print("  Run 'gh auth login' first, then run:")
+        print(f"  ./scripts/github/setup-branch-protection.sh")
+        return False
+
+    config_file = project_root / "scripts" / "github" / "branch-protection-config.json"
+    if not config_file.exists():
+        print(f"  Warning: Config file not found: {config_file}")
+        return False
+
+    repo = f"{github_owner}/{project_name}"
+    print(f"  Applying branch protection to {repo}:{main_branch}...")
+
+    try:
+        subprocess.run(
+            [
+                "gh", "api", "-X", "PUT",
+                f"/repos/{repo}/branches/{main_branch}/protection",
+                "--input", str(config_file),
+            ],
+            capture_output=True,
+            check=True,
+        )
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"  Warning: Failed to apply branch protection")
+        print(f"  Error: {e.stderr.decode() if e.stderr else 'Unknown error'}")
+        print(f"  You can apply it manually later with:")
+        print(f"  ./scripts/github/setup-branch-protection.sh")
+        return False
+
+
 def main() -> int:
     """Main entry point.
 
@@ -335,6 +391,22 @@ def main() -> int:
         else:
             print("  Warning: Could not install pre-commit hooks")
             print("  Run 'pip install pre-commit && pre-commit install' manually")
+
+    # Optional: Setup branch protection (requires GitHub repo to exist first)
+    print("\n" + "-" * 60)
+    print("Branch protection requires the GitHub repository to exist.")
+    setup_protection = get_input("Setup branch protection now?", "no")
+    if setup_protection.lower() in ("yes", "y"):
+        if setup_branch_protection(
+            project_root,
+            values["GITHUB_OWNER"],
+            values["PROJECT_NAME"],
+            values["MAIN_BRANCH"],
+        ):
+            print("  Branch protection configured successfully!")
+        else:
+            print("  You can set it up later by running:")
+            print("  ./scripts/github/setup-branch-protection.sh")
 
     # Remove this setup script
     print("\n" + "-" * 60)
