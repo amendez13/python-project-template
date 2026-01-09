@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh api:*)",
+      "Bash(gh issue view:*)",
+      "Bash(git checkout:*)",
+      "Bash(source venv/bin/activate)",
+      "Bash(bandit:*)",
+      "Bash(safety check)",
+      "Bash(pip install:*)",
+      "Bash(pip-audit:*)",
+      "Bash(pip show:*)",
+      "Bash(grep:*)",
+      "Bash(pre-commit run:*)",
+      "Bash(mypy:*)",
+      "Bash(python -m pytest:*)"
+    ]
+  }
+}
