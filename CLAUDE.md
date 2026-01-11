@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   * docs/INDEX.md
 * After finishing any task, update relevant documentation given changes in codebase.
 * Pre-commit checks must pass before committing. If pre-commit doesn't run, investigate and fix.
-** pyproject.toml and pre-commit have to have the same configuration so local pre-commit and CI checks behave in the same way.
+** pyproject.toml, ci.yml and pre-commit-config.yaml have to have the same configuration so local pre-commit and CI checks behave in the same way.
 ** Any code quality exceptions must be properly documented with a comment in code.
 * Branch naming: `feature/description`, `fix/description`, `docs/description`
 * Commit messages: Use conventional commits (feat:, fix:, docs:, refactor:, test:, chore:)
