@@ -1,6 +1,6 @@
 # Python Project Template Usage Guide
 
-This template provides a complete Python project setup with CI/CD, quality tools, documentation, and shared Claude/Codex AI-skill configuration.
+This template provides a complete Python project setup with CI/CD, quality tools, documentation, shared Claude/Codex AI-skill configuration, committed session notes, and coding-agent configuration.
 
 ## Quick Start
 
@@ -64,7 +64,10 @@ python-project-template/
 │   └── settings.local.json        # Claude Code permissions
 ├── ai-skills/
 │   ├── feature-delivery/          # Starter issue-delivery skill
-│   └── feature-design/            # Starter issue-design skill + helper assets
+│   ├── feature-design/            # Starter issue-design skill + helper assets
+│   └── session-notes/
+│       ├── skill.yaml             # Canonical manifest for the session-notes skill
+│       └── instructions.md        # Shared skill instructions for agent harnesses
 ├── config/
 │   └── config.example.yaml        # Configuration template
 ├── docs/
@@ -85,6 +88,10 @@ python-project-template/
 │   └── github/
 │       ├── branch-protection-config.json  # Protection rules config
 │       └── setup-branch-protection.sh     # Setup script
+├── notes/
+│   ├── .gitkeep                   # Keeps the committed notes directory in the template
+│   ├── .notes-config.yaml.example # Optional secondary summary-log configuration template
+│   └── README.md                  # Session-notes convention and daily-note template
 ├── src/                           # Source code
 │   ├── __init__.py
 │   └── main.py
@@ -92,7 +99,8 @@ python-project-template/
 │   ├── __init__.py
 │   ├── conftest.py
 │   └── test_main.py
-├── CLAUDE.md                      # AI assistant guidance
+├── AGENTS.md                      # Source-of-truth agent workflow and project guidance
+├── CLAUDE.md                      # Symlink to AGENTS.md for Claude compatibility
 ├── README.md                      # Project overview
 ├── TEMPLATE_USAGE.md              # This file
 ├── pyproject.toml                 # Tool configuration
@@ -114,6 +122,13 @@ python-project-template/
 - **Coverage job**: Enforces coverage threshold with HTML reports
 - **Security job**: bandit and pip-audit scanning
 - **Config validation**: YAML and Python syntax checks
+
+### Agent Guidance And Session Notes
+
+- **AGENTS.md**: Shared workflow rules and project context for coding agents
+- **CLAUDE.md -> AGENTS.md**: Compatibility symlink so Claude and other agents read the same guidance
+- **notes/**: Committed engineering session notes with daily-note path conventions
+- **ai-skills/session-notes/**: Canonical skill for creating and updating session notes
 
 ### AI Agent Workflows (Optional)
 
@@ -155,7 +170,8 @@ See `docs/BRANCH_PROTECTION.md` for full documentation.
 
 ### Documentation Structure
 
-- `CLAUDE.md` - AI assistant guidance for Claude Code
+- `AGENTS.md` - Shared coding-agent guidance and workflow rules
+- `CLAUDE.md` - Symlink to `AGENTS.md`
 - `README.md` - User-facing project documentation
 - `docs/INDEX.md` - Central documentation hub
 - `docs/AI_SKILLS.md` - Canonical AI skills structure and deploy workflow
@@ -164,6 +180,7 @@ See `docs/BRANCH_PROTECTION.md` for full documentation.
 - `docs/ARCHITECTURE.md` - Technical architecture (placeholder)
 - `docs/BRANCH_PROTECTION.md` - Branch protection rules documentation
 - `docs/planning/TASK_MANAGEMENT.md` - Development task tracking
+- `notes/README.md` - Session-notes convention and example structure
 
 ### AI Skills
 
@@ -232,6 +249,13 @@ Edit these files to customize quality rules:
 1. Add to `requirements.txt` (production)
 2. Add to `requirements-dev.txt` (development only)
 3. Update `pyproject.toml` if adding type stubs
+
+### Session Notes Workflow
+
+- Keep project-history notes in `notes/YYYY/MM/YYYY-MM-DD.md`.
+- Use `notes/README.md` as the style guide and starter template.
+- If you want the optional secondary summary-log workflow, copy `notes/.notes-config.yaml.example` to `notes/.notes-config.yaml` and update the paths.
+- If you use shared AI-skill deployment, treat `ai-skills/session-notes/` as the canonical source.
 
 ## Troubleshooting
 

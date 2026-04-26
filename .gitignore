@@ -1,8 +1,8 @@
 # Config files with sensitive data
 config/config.yaml
 
-# Personal notes
-notes/
+# Session-notes local configuration
+notes/.notes-config.yaml
 
 # macOS system files
 .DS_Store

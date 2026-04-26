@@ -88,6 +88,16 @@ You can also configure the application using environment variables:
 | `APP_DEBUG` | Enable debug mode | `false` |
 | `APP_LOG_LEVEL` | Logging level | `INFO` |
 
+## Session Notes
+
+This template treats session notes as committed project history, not private scratch files.
+
+- Read [AGENTS.md](../AGENTS.md) for the delivery workflow rules that govern when notes should be updated.
+- Read [notes/README.md](../notes/README.md) for the directory layout, note style, and the daily-note template.
+- Daily notes live at `notes/YYYY/MM/YYYY-MM-DD.md`.
+- If you want the optional secondary summary-log workflow, copy `notes/.notes-config.yaml.example` to `notes/.notes-config.yaml` and customize the paths for your environment.
+- The canonical skill source for note automation lives at `ai-skills/session-notes/`. If you use the shared AI-skills deployment pattern, deploy that skill to your local agent harnesses after editing it.
+
 ## Development Setup
 
 ### Install Pre-commit Hooks
@@ -176,5 +186,6 @@ cp config/config.example.yaml config/config.yaml
 ### Getting Help
 
 - Check the [Documentation Index](INDEX.md)
+- Review [notes/README.md](../notes/README.md) for note conventions
 - Review [CI documentation](CI.md) for testing issues
 - Open an issue on GitHub
