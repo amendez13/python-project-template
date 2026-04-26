@@ -35,6 +35,11 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Verification steps
 - Troubleshooting
 
+**[AI_SKILLS.md](AI_SKILLS.md)**
+- Canonical AI skills source tree
+- Dual deployment to Claude and Codex
+- Starter skills and local deploy workflow
+
 ---
 
 ## Architecture
@@ -56,6 +61,11 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Core workflow and key components
 - Development commands and setup
 - Common development tasks
+
+**[AI_SKILLS.md](AI_SKILLS.md)**
+- Canonical `ai-skills/` structure and starter skills
+- Local deploy workflow for Claude and Codex skill output
+- Troubleshooting rendered skill output
 
 **[CI.md](CI.md)**
 - Continuous Integration (CI) pipeline documentation
@@ -89,6 +99,7 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 |----------|---------|----------|
 | [README.md](../README.md) | Getting started, installation, usage | All users |
 | [SETUP.md](SETUP.md) | Environment configuration | All users |
+| [AI_SKILLS.md](AI_SKILLS.md) | AI skill source, deploy, and starter-skill guide | Developers |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Technical architecture and design | Developers |
 | [CI.md](CI.md) | CI/CD pipeline and development workflow | Developers |
 | [CLAUDE.md](../CLAUDE.md) | AI assistant guidance | Claude Code |
