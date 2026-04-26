@@ -50,6 +50,8 @@ If you prefer to configure manually:
 | `{{MAIN_BRANCH}}` | Main branch name | `main` |
 | `{{DEV_BRANCH}}` | Development branch name | `develop` |
 
+`{{MAX_LINE_LENGTH}}` defaults to `127` because it aligns with the template's Black-based formatting and reduces unnecessary wrapping noise in pull requests on modern editor widths.
+
 ## Template Structure
 
 ```
@@ -62,6 +64,7 @@ python-project-template/
 │   └── dependabot.yml             # Dependency updates
 ├── .claude/
 │   └── settings.local.json        # Claude Code permissions
+├── .env.example                   # Environment-variable configuration example
 ├── ai-skills/
 │   ├── feature-delivery/          # Starter issue-delivery skill
 │   ├── feature-design/            # Starter issue-design skill + helper assets
@@ -249,6 +252,14 @@ Edit these files to customize quality rules:
 1. Add to `requirements.txt` (production)
 2. Add to `requirements-dev.txt` (development only)
 3. Update `pyproject.toml` if adding type stubs
+
+### Configuration Style
+
+The template includes both `config/config.example.yaml` and `.env.example`.
+
+- Prefer YAML when your application needs grouped or nested configuration.
+- Prefer `.env` when your local workflow, deployment target, or process manager is already environment-variable driven.
+- `python-dotenv` is included in the base template so projects can load `.env` during development without extra setup.
 
 ### Session Notes Workflow
 

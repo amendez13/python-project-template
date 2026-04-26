@@ -24,6 +24,7 @@ testpaths = ["{{TEST_DIR}}"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+asyncio_mode = "auto"
 addopts = [
     "--verbose",
     "--strict-markers",
@@ -49,8 +50,9 @@ omit = [
     "*/{{TEST_DIR}}/*",
     "*/venv/*",
     "*/.venv/*",
-    # Add whitelisted files here - files excluded from coverage requirements
-    # Example: Interactive CLI scripts, cloud provider implementations
+    # Add only narrow, explained exceptions here when coverage would not provide
+    # useful signal, such as interactive CLI entry points or provider-specific
+    # implementations that are impractical to exercise in unit tests.
 ]
 
 [tool.coverage.report]
@@ -64,8 +66,9 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    # Whitelisted patterns - excluded from coverage requirements
-    "def main\\(\\):",  # Main entry points (often hard to unit test)
-    "@abstractmethod",  # Abstract methods
+    "if TYPE_CHECKING:",  # Type-only branches are never executed at runtime.
+    # Whitelisted patterns - exclude only patterns that are structurally useful
+    # but not meaningful coverage targets.
+    "def main\\(\\):",  # CLI entry points are often thin wrappers around tested logic.
+    "@abstractmethod",  # Abstract contracts define interfaces, not executable behavior.
 ]

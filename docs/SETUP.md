@@ -54,6 +54,13 @@ nano config/config.yaml
 # Or use your preferred editor
 ```
 
+You can also start from environment variables instead:
+
+```bash
+cp .env.example .env
+# Edit .env with your local values
+```
+
 ### 5. Verify Installation
 
 ```bash
@@ -87,6 +94,15 @@ You can also configure the application using environment variables:
 |----------|-------------|---------|
 | `APP_DEBUG` | Enable debug mode | `false` |
 | `APP_LOG_LEVEL` | Logging level | `INFO` |
+
+### YAML vs `.env`
+
+Both configuration styles are included so a new project can choose the lighter-weight approach that fits its runtime model.
+
+- Use `config/config.yaml` when your project naturally groups structured or nested settings.
+- Use `.env` when deployment platforms, process managers, or local tooling already revolve around environment variables.
+- `python-dotenv` is included so projects can load a local `.env` file during development without exporting each variable manually.
+- It is reasonable to ship both examples and let the application define precedence between YAML and environment variables.
 
 ## Session Notes
 
@@ -128,6 +144,14 @@ The deploy script renders:
 - Codex interface metadata to `~/.codex/skills/<name>/agents/openai.yaml`
 
 See [AI_SKILLS.md](AI_SKILLS.md) for the canonical source layout, starter skills, and troubleshooting guidance.
+
+### Line Length Recommendation
+
+The template defaults `{{MAX_LINE_LENGTH}}` to `127`.
+
+- It aligns with Black and the rest of the code-quality configuration in this template.
+- It fits modern editor widths better than older narrow defaults.
+- It reduces avoidable line-break noise in pull requests while remaining readable in split views.
 
 ### IDE Setup
 
