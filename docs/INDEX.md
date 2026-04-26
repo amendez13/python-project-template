@@ -7,6 +7,7 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 **For Users:**
 - [Getting Started](#getting-started) - Start here if you're new
 - [Setup Guide](#setup-guides) - Configure your environment
+- [Session Notes](#project-history) - Learn the notes convention
 
 **For Developers:**
 - [Architecture](#architecture) - Technical design and implementation details
@@ -32,6 +33,7 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Prerequisites and system requirements
 - Step-by-step installation guide
 - Configuration options
+- Session-notes workflow setup
 - Verification steps
 - Troubleshooting
 
@@ -55,12 +57,17 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 
 ## Developer Resources
 
-**[CLAUDE.md](../CLAUDE.md)**
-- Project overview for AI assistants
+**[AGENTS.md](../AGENTS.md)**
+- Project overview for coding agents
 - Technology stack details
 - Core workflow and key components
 - Development commands and setup
-- Common development tasks
+- Standard delivery workflow and session-notes rules
+
+**[notes/README.md](../notes/README.md)**
+- Session-notes conventions and path layout
+- Daily-note structure and content rules
+- Direct-push exception for notes-only updates
 
 **[AI_SKILLS.md](AI_SKILLS.md)**
 - Canonical `ai-skills/` structure and starter skills
@@ -93,6 +100,15 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 
 ---
 
+## Project History
+
+**[notes/README.md](../notes/README.md)**
+- Committed engineering session notes
+- Daily, topical, and design-note path conventions
+- Guidance on what should and should not go into project notes
+
+---
+
 ## Quick Reference
 
 | Document | Purpose | Audience |
@@ -102,7 +118,8 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 | [AI_SKILLS.md](AI_SKILLS.md) | AI skill source, deploy, and starter-skill guide | Developers |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Technical architecture and design | Developers |
 | [CI.md](CI.md) | CI/CD pipeline and development workflow | Developers |
-| [CLAUDE.md](../CLAUDE.md) | AI assistant guidance | Claude Code |
+| [AGENTS.md](../AGENTS.md) | Coding-agent workflow and guardrails | Claude Code, Codex, other agents |
+| [notes/README.md](../notes/README.md) | Session-notes convention and templates | Developers |
 
 ---
 
