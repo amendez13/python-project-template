@@ -1,6 +1,6 @@
 # Python Project Template Usage Guide
 
-This template provides a complete Python project setup with CI/CD, quality tools, documentation, and Claude AI configuration.
+This template provides a complete Python project setup with CI/CD, quality tools, documentation, and shared Claude/Codex AI-skill configuration.
 
 ## Quick Start
 
@@ -62,17 +62,26 @@ python-project-template/
 │   └── dependabot.yml             # Dependency updates
 ├── .claude/
 │   └── settings.local.json        # Claude Code permissions
+├── ai-skills/
+│   ├── feature-delivery/          # Starter issue-delivery skill
+│   └── feature-design/            # Starter issue-design skill + helper assets
 ├── config/
 │   └── config.example.yaml        # Configuration template
 ├── docs/
 │   ├── INDEX.md                   # Documentation hub
+│   ├── AI_SKILLS.md               # AI skills source/deploy documentation
 │   ├── SETUP.md                   # Installation guide
 │   ├── ARCHITECTURE.md            # Technical design
 │   ├── CI.md                      # CI/CD documentation
 │   ├── BRANCH_PROTECTION.md       # Branch protection documentation
 │   └── planning/
 │       └── TASK_MANAGEMENT.md     # Task tracking
+├── infra/
+│   └── ai-skills/
+│       ├── deploy_ai_skills.yml   # Dual-deploy playbook for AI skills
+│       └── templates/             # Jinja templates for Claude/Codex rendering
 ├── scripts/
+│   ├── deploy_ai_skills.sh        # Local AI skills deploy wrapper
 │   └── github/
 │       ├── branch-protection-config.json  # Protection rules config
 │       └── setup-branch-protection.sh     # Setup script
@@ -106,10 +115,11 @@ python-project-template/
 - **Security job**: bandit and pip-audit scanning
 - **Config validation**: YAML and Python syntax checks
 
-### Claude AI Workflows (Optional)
+### AI Agent Workflows (Optional)
 
 - **claude.yml**: Automation triggered by `@claude` mentions in issues/PRs
 - **claude-code-review.yml**: Code review via `/claude-review` comment
+- **ai-skills/**: Canonical AI skills source rendered to both Claude and Codex
 
 > **Note**: These require a `CLAUDE_CODE_OAUTH_TOKEN` secret in your repository.
 
@@ -148,11 +158,26 @@ See `docs/BRANCH_PROTECTION.md` for full documentation.
 - `CLAUDE.md` - AI assistant guidance for Claude Code
 - `README.md` - User-facing project documentation
 - `docs/INDEX.md` - Central documentation hub
+- `docs/AI_SKILLS.md` - Canonical AI skills structure and deploy workflow
 - `docs/CI.md` - CI/CD pipeline documentation
 - `docs/SETUP.md` - Installation and configuration guide
 - `docs/ARCHITECTURE.md` - Technical architecture (placeholder)
 - `docs/BRANCH_PROTECTION.md` - Branch protection rules documentation
 - `docs/planning/TASK_MANAGEMENT.md` - Development task tracking
+
+### AI Skills
+
+The template now ships two starter AI skills:
+- `feature-delivery` for end-to-end issue implementation workflow
+- `feature-design` for turning rough requests into implementation-ready GitHub issues
+
+Deploy both to Claude and Codex with:
+
+```bash
+./scripts/deploy_ai_skills.sh
+```
+
+See `docs/AI_SKILLS.md` for the canonical layout, rendering model, and troubleshooting guidance.
 
 ## Post-Setup Steps
 

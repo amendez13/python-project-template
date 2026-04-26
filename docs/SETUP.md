@@ -100,6 +100,25 @@ pre-commit install
 pre-commit run --all-files
 ```
 
+### Deploy AI Skills
+
+The template ships canonical AI skill sources under `ai-skills/` and a deploy flow that renders them to both Claude and Codex:
+
+```bash
+./scripts/deploy_ai_skills.sh
+```
+
+Requirements:
+- `ansible-playbook` installed locally
+- write access to `~/.claude/skills/` and `~/.codex/skills/`
+
+The deploy script renders:
+- Claude skills to `~/.claude/skills/<name>/skill.md`
+- Codex skills to `~/.codex/skills/<name>/SKILL.md`
+- Codex interface metadata to `~/.codex/skills/<name>/agents/openai.yaml`
+
+See [AI_SKILLS.md](AI_SKILLS.md) for the canonical source layout, starter skills, and troubleshooting guidance.
+
 ### IDE Setup
 
 #### VS Code
