@@ -46,6 +46,14 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Self-hosted runner setup and operations
 - Docker CI image contract and runner-target guidance
 
+**[OBSERVABILITY.md](OBSERVABILITY.md)**
+- Structured logging and operator observability patterns
+- systemd naming, Loki integration, and session-artifact guidance
+
+**[DEPLOYMENT.md](DEPLOYMENT.md)**
+- Deployment conventions and systemd integration notes
+- Cross-links for release metadata and observability setup
+
 ---
 
 ## Architecture
@@ -91,6 +99,13 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Docker CI image contract and local parity workflow
 - Runner registration and label alignment notes
 
+**[OBSERVABILITY.md](OBSERVABILITY.md)**
+- Two-layer observability model and operator runbook
+- Health endpoint patterns and useful LogQL queries
+
+**[DEPLOYMENT.md](DEPLOYMENT.md)**
+- Deployment skeleton and links to service observability conventions
+
 ---
 
 ## Project Status
@@ -128,6 +143,8 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Technical architecture and design | Developers |
 | [CI.md](CI.md) | CI/CD pipeline and development workflow | Developers |
 | [CI_RUNNER.md](CI_RUNNER.md) | Self-hosted runner operations and CI image contract | Developers, operators |
+| [OBSERVABILITY.md](OBSERVABILITY.md) | Logging, health, Loki, and operator runbook patterns | Developers, operators |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment conventions and observability cross-links | Developers, operators |
 | [AGENTS.md](../AGENTS.md) | Coding-agent workflow and guardrails | Claude Code, Codex, other agents |
 | [notes/README.md](../notes/README.md) | Session-notes convention and templates | Developers |
 

@@ -1,6 +1,15 @@
 """Main entry point for {{PROJECT_NAME}}."""
 
+from __future__ import annotations
+
+import logging
 from typing import Optional
+
+from .logging_config import configure_logging
+from .release_info import get_release_info
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def greet(name: Optional[str] = None) -> str:
@@ -19,6 +28,11 @@ def greet(name: Optional[str] = None) -> str:
 
 def main() -> None:
     """Main entry point."""
+    configure_logging()
+    LOGGER.info(
+        "Application startup",
+        extra={"event": "startup", "release": get_release_info()},
+    )
     print(greet())
 
 

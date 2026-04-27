@@ -55,6 +55,7 @@ For issue-driven work, follow this default sequence:
   - `README.md`
   - `docs/INDEX.md`
 - After finishing a task, update any documentation that changed with it.
+- When changing observability behavior, logging shape, health endpoint contracts, or service naming conventions, update `docs/OBSERVABILITY.md`.
 - `pyproject.toml`, `.github/workflows/ci.yml`, and `.pre-commit-config.yaml` must stay aligned so local checks and CI behave the same way.
 - Any code quality exception must be documented with an inline comment and a reason.
 - Branch naming: `feature/description`, `fix/description`, `docs/description`

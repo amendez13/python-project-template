@@ -1,0 +1,10 @@
+[Unit]
+Description={{PROJECT_NAME}} <job> schedule
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit={{PROJECT_NAME}}-<job>.service
+
+[Install]
+WantedBy=timers.target

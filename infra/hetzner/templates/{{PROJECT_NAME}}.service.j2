@@ -1,0 +1,19 @@
+[Unit]
+Description={{PROJECT_NAME}} application service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{PROJECT_NAME}}
+Group={{PROJECT_NAME}}
+WorkingDirectory=/opt/{{PROJECT_NAME}}
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/{{PROJECT_NAME}}/venv/bin/python -m {{SOURCE_DIR}}.main
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=120
+SyslogIdentifier={{PROJECT_NAME}}
+
+[Install]
+WantedBy=multi-user.target
