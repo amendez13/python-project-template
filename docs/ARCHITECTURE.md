@@ -6,6 +6,27 @@ This document describes the technical architecture of {{PROJECT_NAME}}.
 
 [High-level description of the system architecture]
 
+## Delivery And Deployment Control Plane
+
+The template now includes a deployment control plane alongside the application scaffold:
+
+- `.github/workflows/release.yml` is the operator entry point for manual and release-driven deployments
+- `scripts/github/resolve_release_context.py` converts trigger-specific GitHub metadata into stable deployment inputs
+- `scripts/redeploy.sh` and `scripts/release_smoke_check.sh` define the handoff between GitHub Actions and the infrastructure playbooks
+- `infra/hetzner/`, `infra/home-worker/`, and `infra/site/` provide the inventory, secrets, and orchestration skeletons that projects customize per environment
+
+```mermaid
+flowchart LR
+    A["workflow_dispatch / release: published"] --> B["resolve_release_context.py"]
+    B --> C["tag create or verify"]
+    C --> D["GitHub Release status update"]
+    D --> E["materialize SSH, inventory, secrets"]
+    E --> F["scripts/redeploy.sh"]
+    F --> G["Ansible playbooks under infra/"]
+    G --> H["scripts/release_smoke_check.sh"]
+    H --> I["success/failure status update on Release"]
+```
+
 ## System Components
 
 ### Component Diagram

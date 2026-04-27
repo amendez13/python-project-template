@@ -7,6 +7,7 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 **For Users:**
 - [Getting Started](#getting-started) - Start here if you're new
 - [Setup Guide](#setup-guides) - Configure your environment
+- [Release Workflow](#operations) - Run a release deployment
 - [Session Notes](#project-history) - Learn the notes convention
 
 **For Developers:**
@@ -50,9 +51,14 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Structured logging and operator observability patterns
 - systemd naming, Loki integration, and session-artifact guidance
 
+**[RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md)**
+- Release automation trigger model
+- Deployment status updates on GitHub Releases
+- Required secrets and troubleshooting guidance
+
 **[DEPLOYMENT.md](DEPLOYMENT.md)**
-- Deployment conventions and systemd integration notes
-- Cross-links for release metadata and observability setup
+- Deployment conventions plus manual deployment and rollback runbook
+- Cross-links for release metadata, observability, and target playbooks
 
 ---
 
@@ -103,8 +109,32 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Two-layer observability model and operator runbook
 - Health endpoint patterns and useful LogQL queries
 
+**[RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md)**
+- Release deployment workflow structure
+- Trigger normalization and release-body status updates
+- Deployment troubleshooting checklist
+
 **[DEPLOYMENT.md](DEPLOYMENT.md)**
-- Deployment skeleton and links to service observability conventions
+- Deployment conventions, rollback path, and secrets-handling notes
+- Target/playbook alignment plus service observability links
+
+---
+
+## Operations
+
+**[OBSERVABILITY.md](OBSERVABILITY.md)**
+- Health endpoint, logging, and Loki query guidance
+- systemd naming and session-artifact conventions
+
+**[RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md)**
+- Release workflow triggers and required GitHub Secrets
+- Deployment status section written back to GitHub Releases
+- Troubleshooting steps for failed or skipped deploys
+
+**[DEPLOYMENT.md](DEPLOYMENT.md)**
+- Manual deployment and rollback commands
+- Inventory and secrets conventions
+- Follow-up customization guidance for target playbooks
 
 ---
 
@@ -144,7 +174,8 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 | [CI.md](CI.md) | CI/CD pipeline and development workflow | Developers |
 | [CI_RUNNER.md](CI_RUNNER.md) | Self-hosted runner operations and CI image contract | Developers, operators |
 | [OBSERVABILITY.md](OBSERVABILITY.md) | Logging, health, Loki, and operator runbook patterns | Developers, operators |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment conventions and observability cross-links | Developers, operators |
+| [RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md) | Release deployment automation guide | Developers, operators |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment conventions plus runbook and rollback notes | Developers, operators |
 | [AGENTS.md](../AGENTS.md) | Coding-agent workflow and guardrails | Claude Code, Codex, other agents |
 | [notes/README.md](../notes/README.md) | Session-notes convention and templates | Developers |
 
