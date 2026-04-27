@@ -1,8 +1,9 @@
 """Tests for the main module."""
 
-import pytest
+from tests.module_loader import import_source_module
 
-from src.main import greet
+
+greet = import_source_module("main").greet
 
 
 class TestGreet:

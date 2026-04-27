@@ -6,7 +6,14 @@ import json
 import logging
 from pathlib import Path
 
-from src.logging_config import JSONFormatter, configure_logging, get_log_context, set_log_context
+from tests.module_loader import import_source_module
+
+
+logging_config = import_source_module("logging_config")
+JSONFormatter = logging_config.JSONFormatter
+configure_logging = logging_config.configure_logging
+get_log_context = logging_config.get_log_context
+set_log_context = logging_config.set_log_context
 
 
 class TestLogContext:

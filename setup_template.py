@@ -245,6 +245,37 @@ def update_file_references(
                 pass
 
 
+def render_template_path(path: Path, replacements: Dict[str, str]) -> Path:
+    """Render template placeholders in a relative path."""
+    rendered = str(path)
+    for var_name, value in replacements.items():
+        rendered = rendered.replace("{{" + var_name + "}}", value)
+    return Path(rendered)
+
+
+def rename_template_paths(project_root: Path, replacements: Dict[str, str]) -> int:
+    """Rename files and directories whose paths still contain template placeholders."""
+    renamed_count = 0
+    paths = sorted(
+        project_root.rglob("*"),
+        key=lambda candidate: len(candidate.relative_to(project_root).parts),
+        reverse=True,
+    )
+
+    for path in paths:
+        relative_path = path.relative_to(project_root)
+        rendered_relative_path = render_template_path(relative_path, replacements)
+        if rendered_relative_path == relative_path:
+            continue
+
+        target_path = project_root / rendered_relative_path
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        path.rename(target_path)
+        renamed_count += 1
+
+    return renamed_count
+
+
 def init_git_repo(project_root: Path) -> bool:
     """Initialize a git repository.
 
@@ -392,6 +423,10 @@ def main() -> int:
         if rename_directory(project_root, "tests", values["TEST_DIR"]):
             print(f"  Renamed: tests -> {values['TEST_DIR']}")
             update_file_references(project_root, "tests", values["TEST_DIR"])
+
+    renamed_template_paths = rename_template_paths(project_root, values)
+    if renamed_template_paths:
+        print(f"  Rendered {renamed_template_paths} template path(s)")
 
     # Optional: Initialize git repository
     print("\n" + "-" * 60)

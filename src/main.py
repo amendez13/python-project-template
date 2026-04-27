@@ -5,8 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from src.logging_config import configure_logging
-from src.release_info import get_release_info
+from .logging_config import configure_logging
+from .release_info import get_release_info
 
 
 LOGGER = logging.getLogger(__name__)

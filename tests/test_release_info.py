@@ -5,7 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import src.release_info as release_info_module
+from tests.module_loader import import_source_module
+
+
+release_info_module = import_source_module("release_info")
 
 
 def test_get_release_info_prefers_environment(monkeypatch) -> None:  # type: ignore[no-untyped-def]
