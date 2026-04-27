@@ -61,6 +61,7 @@ python-project-template/
 │   ├── workflows/
 │   │   ├── ci.yml                 # Main CI pipeline
 │   │   ├── ci-image.yml           # Shared CI image build/publish workflow
+│   │   ├── release.yml            # Manual + release-event deployment workflow
 │   │   ├── claude.yml             # Claude Code automation
 │   │   └── claude-code-review.yml # AI code review
 │   └── dependabot.yml             # Dependency updates
@@ -82,6 +83,8 @@ python-project-template/
 │   ├── ARCHITECTURE.md            # Technical design
 │   ├── CI.md                      # CI/CD documentation
 │   ├── CI_RUNNER.md               # Self-hosted runner and CI image guide
+│   ├── RELEASE_WORKFLOW.md        # Release deployment workflow guide
+│   ├── DEPLOYMENT.md              # Manual deployment runbook
 │   ├── BRANCH_PROTECTION.md       # Branch protection documentation
 │   └── planning/
 │       └── TASK_MANAGEMENT.md     # Task tracking
@@ -93,12 +96,25 @@ python-project-template/
 │   │   ├── Dockerfile             # Shared Ubuntu CI image
 │   │   ├── docker-compose.ci.yml  # Local CI container shell
 │   │   └── build-and-push.sh      # Manual multi-arch CI image helper
-│   └── home-worker/
-│       └── ci_runner_setup.yml    # Self-hosted runner bootstrap skeleton
+│   ├── hetzner/
+│   │   ├── inventory.local.ini.example # Example VPS inventory
+│   │   ├── secrets.yml.example    # Example deploy vars
+│   │   └── provision_vps.yml      # VPS bootstrap skeleton
+│   ├── home-worker/
+│   │   ├── ci_runner_setup.yml    # Self-hosted runner bootstrap skeleton
+│   │   ├── inventory.local.ini.example # Example worker inventory
+│   │   ├── secrets.yml.example    # Example worker vars
+│   │   ├── deploy_target_setup.yml # Worker/bootstrap skeleton
+│   │   └── redeploy.yml           # Home-worker redeploy skeleton
+│   └── site/
+│       └── redeploy.yml           # Site deployment orchestration skeleton
 ├── scripts/
 │   ├── deploy_ai_skills.sh        # Local AI skills deploy wrapper
+│   ├── redeploy.sh                # Ansible redeploy wrapper
+│   ├── release_smoke_check.sh     # Post-deployment smoke checks
 │   └── github/
 │       ├── branch-protection-config.json  # Protection rules config
+│       ├── resolve_release_context.py     # Release-trigger normalization helper
 │       └── setup-branch-protection.sh     # Setup script
 ├── notes/
 │   ├── .gitkeep                   # Keeps the committed notes directory in the template
@@ -149,6 +165,26 @@ python-project-template/
 - **CI_RUNNER** template variable sets the default runner target
 - **infra/home-worker/ci_runner_setup.yml** provides a Linux runner bootstrap skeleton
 - **docs/CI_RUNNER.md** explains GitHub-hosted vs self-hosted usage and runner-as-contract guidance
+
+### Release Workflow Skeleton
+
+- **release.yml** supports `workflow_dispatch` and `release: published` triggers
+- **resolve_release_context.py** normalizes trigger-specific metadata into stable outputs
+- **scripts/redeploy.sh** selects the appropriate Ansible playbook for `hetzner` or `home_worker`
+- **scripts/release_smoke_check.sh** performs generic HTTP checks with an optional version/ref assertion
+- **docs/RELEASE_WORKFLOW.md** documents operator usage, required secrets, and the release-body deployment status section
+- **docs/DEPLOYMENT.md** documents manual deploy and rollback commands
+
+Recommended GitHub Secrets for the release pipeline:
+
+- `DEPLOY_SSH_PRIVATE_KEY`
+- `DEPLOY_KNOWN_HOSTS`
+- `HETZNER_INVENTORY`
+- `HETZNER_SECRETS_YAML`
+- `HETZNER_BASE_URL`
+- `HOME_WORKER_INVENTORY`
+- `HOME_WORKER_SECRETS_YAML`
+- `HOME_WORKER_BASE_URL`
 
 ### Agent Guidance And Session Notes
 
@@ -204,6 +240,8 @@ See `docs/BRANCH_PROTECTION.md` for full documentation.
 - `docs/AI_SKILLS.md` - Canonical AI skills structure and deploy workflow
 - `docs/CI.md` - CI/CD pipeline documentation
 - `docs/CI_RUNNER.md` - Self-hosted runner operations and CI image contract
+- `docs/RELEASE_WORKFLOW.md` - Release deployment workflow documentation
+- `docs/DEPLOYMENT.md` - Manual deployment and rollback runbook
 - `docs/SETUP.md` - Installation and configuration guide
 - `docs/ARCHITECTURE.md` - Technical architecture (placeholder)
 - `docs/BRANCH_PROTECTION.md` - Branch protection rules documentation

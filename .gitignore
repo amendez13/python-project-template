@@ -53,6 +53,12 @@ coverage.xml
 # Security scanning cache
 .pip-audit-cache/
 
+# Deployment inventories and secrets
+infra/hetzner/inventory.local.ini
+infra/hetzner/secrets.yml
+infra/home-worker/inventory.local.ini
+infra/home-worker/secrets.yml
+
 # Temporary files
 temp/
 tmp/
