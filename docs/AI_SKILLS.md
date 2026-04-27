@@ -11,13 +11,17 @@ Using one source of truth avoids drift between platform-specific skill directori
 
 ## Starter skills
 
-The template ships two starter skills:
+The template ships:
+- `example-skill`
+  - Minimal copyable scaffold with a manifest, instructions, and a stub helper script.
 - `feature-delivery`
   - Guides issue-driven delivery from branch creation through tests, PR, CI, review, merge, and cleanup.
 - `feature-design`
   - Guides turning rough requests into implementation-ready GitHub issues and includes a helper for mockup screenshot uploads.
+- `session-notes`
+  - Documents the committed session-notes workflow used by this repository.
 
-These replace the older placeholder scaffold pattern and are intended to be copied, extended, or used as reference implementations for new project-specific skills.
+Use `example-skill` as the smallest starting point and the other shipped skills as fuller reference implementations.
 
 ## Canonical structure
 
@@ -73,7 +77,7 @@ The deploy workflow:
 4. Run `./scripts/deploy_ai_skills.sh`.
 5. Confirm the rendered files appear under both `~/.claude/skills/<name>/` and `~/.codex/skills/<name>/`.
 
-Use `feature-delivery` and `feature-design` as the worked examples for naming, manifest structure, and how much guidance to include.
+Use `example-skill` for the minimal scaffold and `feature-delivery` / `feature-design` for fuller worked examples of naming, manifest structure, and guidance depth.
 
 ## Rendering differences
 

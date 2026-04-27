@@ -67,8 +67,10 @@ python-project-template/
 │   └── dependabot.yml             # Dependency updates
 ├── .claude/
 │   └── settings.local.json        # Claude Code permissions
+├── .mcp.json.example              # MCP configuration starting point
 ├── .env.example                   # Environment-variable configuration example
 ├── ai-skills/
+│   ├── example-skill/             # Minimal scaffold for new skills
 │   ├── feature-delivery/          # Starter issue-delivery skill
 │   ├── feature-design/            # Starter issue-design skill + helper assets
 │   └── session-notes/
@@ -190,6 +192,7 @@ Recommended GitHub Secrets for the release pipeline:
 
 - **AGENTS.md**: Shared workflow rules and project context for coding agents
 - **CLAUDE.md -> AGENTS.md**: Compatibility symlink so Claude and other agents read the same guidance
+- **.mcp.json.example**: Copyable MCP server configuration starter for local setup
 - **notes/**: Committed engineering session notes with daily-note path conventions
 - **ai-skills/session-notes/**: Canonical skill for creating and updating session notes
 
@@ -250,7 +253,8 @@ See `docs/BRANCH_PROTECTION.md` for full documentation.
 
 ### AI Skills
 
-The template now ships two starter AI skills:
+The template now ships a minimal example scaffold plus starter AI skills:
+- `example-skill` for copying into new project-specific skills
 - `feature-delivery` for end-to-end issue implementation workflow
 - `feature-design` for turning rough requests into implementation-ready GitHub issues
 
@@ -261,6 +265,16 @@ Deploy both to Claude and Codex with:
 ```
 
 See `docs/AI_SKILLS.md` for the canonical layout, rendering model, and troubleshooting guidance.
+
+### MCP Configuration
+
+Copy the example file when you want local MCP server configuration:
+
+```bash
+cp .mcp.json.example .mcp.json
+```
+
+Then customize `.mcp.json` for your own servers and credentials. The real `.mcp.json` stays ignored by git.
 
 ### CI Image Bootstrap
 

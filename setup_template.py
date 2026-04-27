@@ -84,7 +84,7 @@ FILES_TO_PROCESS: List[str] = [
     "pyproject.toml",
     ".flake8",
     ".pylintrc",
-    "CLAUDE.md",
+    "AGENTS.md",
     "README.md",
     "docs/INDEX.md",
     "docs/AI_SKILLS.md",
@@ -94,6 +94,7 @@ FILES_TO_PROCESS: List[str] = [
     "docs/ARCHITECTURE.md",
     "docs/OBSERVABILITY.md",
     "docs/DEPLOYMENT.md",
+    ".mcp.json.example",
     "docs/BRANCH_PROTECTION.md",
     "docs/planning/TASK_MANAGEMENT.md",
     "TEMPLATE_USAGE.md",
@@ -276,6 +277,31 @@ def rename_template_paths(project_root: Path, replacements: Dict[str, str]) -> i
     return renamed_count
 
 
+def ensure_claude_symlink(project_root: Path) -> bool:
+    """Ensure CLAUDE.md is a symlink to AGENTS.md."""
+    agents_path = project_root / "AGENTS.md"
+    claude_path = project_root / "CLAUDE.md"
+
+    if not agents_path.exists():
+        print("  Warning: AGENTS.md is missing; cannot recreate CLAUDE.md symlink")
+        return False
+
+    if claude_path.is_symlink():
+        if os.readlink(claude_path) == "AGENTS.md":
+            return True
+        claude_path.unlink()
+    elif claude_path.exists():
+        claude_path.unlink()
+
+    try:
+        claude_path.symlink_to("AGENTS.md")
+    except OSError as exc:
+        print(f"  Warning: Could not create CLAUDE.md symlink: {exc}")
+        return False
+
+    return claude_path.is_symlink() and os.readlink(claude_path) == "AGENTS.md"
+
+
 def init_git_repo(project_root: Path) -> bool:
     """Initialize a git repository.
 
@@ -427,6 +453,11 @@ def main() -> int:
     renamed_template_paths = rename_template_paths(project_root, values)
     if renamed_template_paths:
         print(f"  Rendered {renamed_template_paths} template path(s)")
+
+    if ensure_claude_symlink(project_root):
+        print("  Ensured: CLAUDE.md -> AGENTS.md")
+    else:
+        print("  Warning: CLAUDE.md is not a symlink to AGENTS.md after setup")
 
     # Optional: Initialize git repository
     print("\n" + "-" * 60)

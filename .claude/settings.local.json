@@ -1,21 +1,39 @@
 {
   "permissions": {
     "allow": [
+      "Bash(ansible-playbook:*)",
+      "Bash(find:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
       "Bash(git mv:*)",
+      "Bash(git pull:*)",
+      "Bash(git push:*)",
+      "Bash(git status:*)",
+      "Bash(git worktree:*)",
+      "Bash(ln -s:*)",
+      "Bash(ls -l:*)",
+      "Bash(pre-commit install)",
       "Bash(gh pr view:*)",
       "Bash(gh api:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr comment:*)",
       "Bash(gh issue view:*)",
       "Bash(git checkout:*)",
-      "Bash(source venv/bin/activate)",
       "Bash(bandit:*)",
-      "Bash(safety check)",
-      "Bash(pip install:*)",
-      "Bash(pip-audit:*)",
-      "Bash(pip show:*)",
       "Bash(grep:*)",
-      "Bash(pre-commit run:*)",
       "Bash(mypy:*)",
-      "Bash(python -m pytest:*)"
+      "Bash(pip install:*)",
+      "Bash(pip show:*)",
+      "Bash(pip-audit:*)",
+      "Bash(pre-commit run:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python3 -m py_compile:*)",
+      "Bash(pytest:*)",
+      "Bash(readlink:*)",
+      "Bash(rg:*)",
+      "Bash(safety check)",
+      "Bash(source venv/bin/activate)",
+      "Bash(./scripts/deploy_ai_skills.sh:*)"
     ]
   }
 }
