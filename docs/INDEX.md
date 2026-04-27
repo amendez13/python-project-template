@@ -42,6 +42,10 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Dual deployment to Claude and Codex
 - Starter skills and local deploy workflow
 
+**[CI_RUNNER.md](CI_RUNNER.md)**
+- Self-hosted runner setup and operations
+- Docker CI image contract and runner-target guidance
+
 ---
 
 ## Architecture
@@ -82,6 +86,11 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Running CI checks locally
 - Troubleshooting CI failures
 
+**[CI_RUNNER.md](CI_RUNNER.md)**
+- GitHub-hosted vs self-hosted runner guidance
+- Docker CI image contract and local parity workflow
+- Runner registration and label alignment notes
+
 ---
 
 ## Project Status
@@ -118,6 +127,7 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 | [AI_SKILLS.md](AI_SKILLS.md) | AI skill source, deploy, and starter-skill guide | Developers |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Technical architecture and design | Developers |
 | [CI.md](CI.md) | CI/CD pipeline and development workflow | Developers |
+| [CI_RUNNER.md](CI_RUNNER.md) | Self-hosted runner operations and CI image contract | Developers, operators |
 | [AGENTS.md](../AGENTS.md) | Coding-agent workflow and guardrails | Claude Code, Codex, other agents |
 | [notes/README.md](../notes/README.md) | Session-notes convention and templates | Developers |
 

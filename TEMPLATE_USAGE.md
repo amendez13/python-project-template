@@ -49,6 +49,7 @@ If you prefer to configure manually:
 | `{{TEST_DIR}}` | Test directory name | `tests` |
 | `{{MAIN_BRANCH}}` | Main branch name | `main` |
 | `{{DEV_BRANCH}}` | Development branch name | `develop` |
+| `{{CI_RUNNER}}` | Default CI runner target | `github_hosted` |
 
 `{{MAX_LINE_LENGTH}}` defaults to `127` because it aligns with the template's Black-based formatting and reduces unnecessary wrapping noise in pull requests on modern editor widths.
 
@@ -59,6 +60,7 @@ python-project-template/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml                 # Main CI pipeline
+│   │   ├── ci-image.yml           # Shared CI image build/publish workflow
 │   │   ├── claude.yml             # Claude Code automation
 │   │   └── claude-code-review.yml # AI code review
 │   └── dependabot.yml             # Dependency updates
@@ -79,13 +81,20 @@ python-project-template/
 │   ├── SETUP.md                   # Installation guide
 │   ├── ARCHITECTURE.md            # Technical design
 │   ├── CI.md                      # CI/CD documentation
+│   ├── CI_RUNNER.md               # Self-hosted runner and CI image guide
 │   ├── BRANCH_PROTECTION.md       # Branch protection documentation
 │   └── planning/
 │       └── TASK_MANAGEMENT.md     # Task tracking
 ├── infra/
-│   └── ai-skills/
-│       ├── deploy_ai_skills.yml   # Dual-deploy playbook for AI skills
-│       └── templates/             # Jinja templates for Claude/Codex rendering
+│   ├── ai-skills/
+│   │   ├── deploy_ai_skills.yml   # Dual-deploy playbook for AI skills
+│   │   └── templates/             # Jinja templates for Claude/Codex rendering
+│   ├── ci/
+│   │   ├── Dockerfile             # Shared Ubuntu CI image
+│   │   ├── docker-compose.ci.yml  # Local CI container shell
+│   │   └── build-and-push.sh      # Manual multi-arch CI image helper
+│   └── home-worker/
+│       └── ci_runner_setup.yml    # Self-hosted runner bootstrap skeleton
 ├── scripts/
 │   ├── deploy_ai_skills.sh        # Local AI skills deploy wrapper
 │   └── github/
@@ -120,11 +129,26 @@ python-project-template/
 
 ### CI/CD Pipeline (`.github/workflows/ci.yml`)
 
-- **Lint job**: Black, isort, flake8, mypy
-- **Test job**: pytest across Python 3.10, 3.11, 3.12
+- **Resolve-runner job**: Selects GitHub-hosted vs self-hosted labels and skip mode
+- **Lint job**: Black, isort, flake8, mypy in the shared CI image
+- **Test job**: pytest across Python 3.10, 3.11, 3.12 after coverage passes
 - **Coverage job**: Enforces coverage threshold with HTML reports
 - **Security job**: bandit and pip-audit scanning
 - **Config validation**: YAML and Python syntax checks
+- **Smart skip logic**: docs-only diffs and merged-PR pushes to `main` skip heavy jobs but still report `CI Status Check`
+
+### Docker CI Environment (`infra/ci/`)
+
+- **Dockerfile**: Ubuntu 24.04 CI image with Python 3.10, 3.11, and 3.12 plus preinstalled CI tooling
+- **docker-compose.ci.yml**: Local shell into the same environment GitHub Actions uses
+- **build-and-push.sh**: Manual multi-platform build helper for GHCR
+
+### Self-Hosted Runner Support
+
+- **resolve-runner** output drives `runs-on: ${{ fromJSON(...) }}` in CI
+- **CI_RUNNER** template variable sets the default runner target
+- **infra/home-worker/ci_runner_setup.yml** provides a Linux runner bootstrap skeleton
+- **docs/CI_RUNNER.md** explains GitHub-hosted vs self-hosted usage and runner-as-contract guidance
 
 ### Agent Guidance And Session Notes
 
@@ -179,6 +203,7 @@ See `docs/BRANCH_PROTECTION.md` for full documentation.
 - `docs/INDEX.md` - Central documentation hub
 - `docs/AI_SKILLS.md` - Canonical AI skills structure and deploy workflow
 - `docs/CI.md` - CI/CD pipeline documentation
+- `docs/CI_RUNNER.md` - Self-hosted runner operations and CI image contract
 - `docs/SETUP.md` - Installation and configuration guide
 - `docs/ARCHITECTURE.md` - Technical architecture (placeholder)
 - `docs/BRANCH_PROTECTION.md` - Branch protection rules documentation
@@ -198,6 +223,16 @@ Deploy both to Claude and Codex with:
 ```
 
 See `docs/AI_SKILLS.md` for the canonical layout, rendering model, and troubleshooting guidance.
+
+### CI Image Bootstrap
+
+Before requiring the new containerized CI contexts in branch protection, publish the shared CI image at least once:
+
+```bash
+./infra/ci/build-and-push.sh
+```
+
+Or trigger `.github/workflows/ci-image.yml` manually from GitHub Actions.
 
 ## Post-Setup Steps
 
@@ -267,6 +302,12 @@ The template includes both `config/config.example.yaml` and `.env.example`.
 - Use `notes/README.md` as the style guide and starter template.
 - If you want the optional secondary summary-log workflow, copy `notes/.notes-config.yaml.example` to `notes/.notes-config.yaml` and update the paths.
 - If you use shared AI-skill deployment, treat `ai-skills/session-notes/` as the canonical source.
+
+### CI Runner Target
+
+- `{{CI_RUNNER}}` controls the default runner target used by `.github/workflows/ci.yml`.
+- Supported values are `github_hosted`, `self_hosted_linux`, and `self_hosted_linux_arm64`.
+- Keep the workflow, `docs/CI_RUNNER.md`, and any self-hosted runner bootstrap playbooks aligned if you change the labels or targets.
 
 ## Troubleshooting
 

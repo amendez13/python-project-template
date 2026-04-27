@@ -1,133 +1,166 @@
 # CI/CD Pipeline Documentation
 
-This document describes the Continuous Integration and Continuous Deployment pipeline for {{PROJECT_NAME}}.
+This document describes the Continuous Integration pipeline for {{PROJECT_NAME}}, including the Docker CI image, runner-resolution workflow, and the local validation path that mirrors GitHub Actions.
 
 ## Overview
 
-The CI pipeline runs on every push to `{{MAIN_BRANCH}}` and `{{DEV_BRANCH}}` branches, and on all pull requests targeting these branches.
+The CI workflow runs on pushes and pull requests targeting `{{MAIN_BRANCH}}` and `{{DEV_BRANCH}}`. It now uses a shared Docker image for the real checks instead of installing tools independently in every job.
 
-## Pipeline Jobs
+## CI Jobs (`.github/workflows/ci.yml`)
 
-### 1. Lint (`lint`)
+### Runner Resolution
 
-**Purpose**: Ensure code quality and consistency
+- `resolve-runner` decides which runner labels downstream jobs should use.
+- The default target comes from `{{CI_RUNNER}}`.
+- Manual `workflow_dispatch` runs can override the target with:
+  - `github_hosted`
+  - `self_hosted_linux`
+  - `self_hosted_linux_arm64`
+- Downstream jobs use `runs-on: ${{ fromJSON(needs.resolve-runner.outputs.runner) }}`.
+- `resolve-runner` also emits `container.options` for self-hosted runs so containerized jobs keep workspace file ownership compatible with the runner user.
 
-**Tools**:
-- **Black**: Code formatting (line length: {{MAX_LINE_LENGTH}})
-- **isort**: Import sorting (Black-compatible)
-- **flake8**: Style and error checking (complexity: {{MAX_COMPLEXITY}})
-- **mypy**: Static type checking (strict mode)
+### Smart Skip Logic
 
-**Runs on**: Python 3.12
+`resolve-runner` classifies whether the expensive jobs should be skipped before checking out the repository:
 
-### 2. Test (`test`)
+- docs-only changes matching `docs/**`, `notes/**`, `README.md`, `AGENTS.md`, or `CLAUDE.md`
+- push-to-`{{MAIN_BRANCH}}` commits that GitHub already associates with a merged pull request
+- merge-commit fallback heuristic when the API association is temporarily unavailable
 
-**Purpose**: Run unit tests across Python versions
+The aggregate `CI Status Check` job still runs and reports the skip reason, so the skip path is explicit rather than a silent green pass.
 
-**Matrix**: Python {{PYTHON_VERSIONS}}
+### Container Execution Model
 
-**Tools**:
-- **pytest**: Test framework
-- **pytest-cov**: Coverage reporting
-- **pytest-mock**: Mocking utilities
+All CI jobs except `resolve-runner` execute in the same image:
 
-**Output**: Coverage reports uploaded to Codecov (on Python 3.12)
+- `ghcr.io/{{GITHUB_OWNER}}/{{PROJECT_NAME}}-ci:latest`
+- multi-platform manifest: `linux/amd64` and `linux/arm64`
+- checkout path isolation via `path: repo`
+- `safe.directory` configured in every container job
+- no per-job `actions/setup-python`
+- Python matrix jobs call preinstalled interpreters directly (`python3.10`, `python3.11`, `python3.12`)
 
-### 3. Coverage (`coverage`)
+### Failure Short-Circuiting
 
-**Purpose**: Enforce minimum test coverage
+- workflow concurrency cancels stale pull-request runs on new pushes
+- `coverage` runs before the Python matrix, so low coverage fails before the full matrix fan-out
+- the Python matrix uses `fail-fast: true`
+- each container job requests workflow cancellation via the Actions API if it fails
 
-**Threshold**: {{COVERAGE_THRESHOLD}}%
+## Job Summary
 
-**Output**: HTML coverage report (artifact, 14-day retention)
+### 1. Resolve Runner Target
 
-### 4. Security (`security`)
+Purpose: choose the runner labels, container options, CI image reference, and skip mode.
 
-**Purpose**: Scan for security vulnerabilities
+### 2. Lint and Code Quality
 
-**Tools**:
-- **bandit**: Static security analysis (medium+ severity)
-- **pip-audit**: Dependency vulnerability scanning
+Purpose: run black, isort, flake8, and mypy.
 
-### 5. Validate Config (`validate-config`)
+Implementation detail:
+- uses a pinned lint-only virtual environment so lint versions stay stable even if the shared image tag moves forward
 
-**Purpose**: Validate configuration files
+### 3. Coverage Check
 
-**Checks**:
-- YAML syntax validation
-- Python syntax validation
+Purpose: enforce the `{{COVERAGE_THRESHOLD}}%` coverage gate and publish the HTML coverage artifact.
 
-### 6. Build Status (`build-status`)
+### 4. Test Python 3.10 / 3.11 / 3.12
 
-**Purpose**: Aggregate all job results
+Purpose: run the correctness matrix after the coverage gate passes.
 
-**Depends on**: lint, test, coverage, security, validate-config
+### 5. Security Checks
 
-## Running Locally
+Purpose: run bandit and pip-audit in the shared CI image.
 
-### Pre-commit Hooks
+### 6. Validate Configuration
 
-Install and run pre-commit hooks locally:
+Purpose: validate YAML configuration and Python syntax.
+
+### 7. CI Status Check
+
+Purpose: aggregate job outcomes and publish the final required status, including intentional skip reasons.
+
+## CI Image Workflow (`.github/workflows/ci-image.yml`)
+
+The CI image workflow rebuilds and publishes the shared image when these inputs change:
+
+- `infra/ci/Dockerfile`
+- `requirements.txt`
+- `.pre-commit-config.yaml`
+
+Published tags:
+
+- `ghcr.io/{{GITHUB_OWNER}}/{{PROJECT_NAME}}-ci:latest`
+- `ghcr.io/{{GITHUB_OWNER}}/{{PROJECT_NAME}}-ci:<git-sha>`
+
+Published platforms:
+
+- `linux/amd64`
+- `linux/arm64`
+
+## Local Validation
+
+### Run the same CI image locally
 
 ```bash
-# Install hooks
-pre-commit install
-
-# Run all hooks manually
-pre-commit run --all-files
-
-# Run specific hook
-pre-commit run black --all-files
+docker build -t {{PROJECT_NAME}}-ci:test -f infra/ci/Dockerfile .
+docker compose -f infra/ci/docker-compose.ci.yml run --rm ci bash
 ```
 
-### Individual Checks
+Inside the container shell:
 
 ```bash
-# Formatting
-black --check --diff {{SOURCE_DIR}}/
-isort --check-only --diff {{SOURCE_DIR}}/
+python3.10 --version
+python3.11 --version
+python3.12 --version
+black --version
+flake8 --version
+mypy --version
+pytest --version
+python3.12 -m pytest {{TEST_DIR}}/ -v --cov={{SOURCE_DIR}}
+```
 
-# Linting
-flake8 {{SOURCE_DIR}}/ --max-complexity={{MAX_COMPLEXITY}} --max-line-length={{MAX_LINE_LENGTH}}
+### Run the repository checks without Docker
 
-# Type checking
-mypy {{SOURCE_DIR}}/ --strict
-
-# Tests with coverage
+```bash
+pre-commit run --all-files
 pytest {{TEST_DIR}}/ -v --cov={{SOURCE_DIR}} --cov-report=term-missing --cov-fail-under={{COVERAGE_THRESHOLD}}
-
-# Security
+pytest {{TEST_DIR}}/ -v
 bandit -r {{SOURCE_DIR}}/ -ll
 pip-audit --requirement requirements.txt
 ```
 
-## Troubleshooting
+## Containerized CI Architecture
 
-### Common Issues
+```mermaid
+flowchart LR
+    A["push / pull_request / workflow_dispatch"] --> B["resolve-runner"]
+    B --> B1{"merged PR push or docs-only diff?"}
+    B1 -- Yes --> H["CI Status Check"]
+    B1 -- No --> C["containerized jobs"]
+    C --> D["Coverage Check"]
+    C --> E["Lint / Security / Validate Configuration"]
+    D --> F["Test matrix: Python 3.10 / 3.11 / 3.12"]
+    D --> G["coverage.xml + htmlcov + Codecov"]
+    E --> H
+    F --> H
+    G --> H
 
-**Black/isort conflicts**:
-- Run `black {{SOURCE_DIR}}/` then `isort {{SOURCE_DIR}}/`
-- isort uses Black-compatible profile
-
-**Coverage below threshold**:
-- Check `htmlcov/index.html` for uncovered lines
-- Add tests for uncovered code paths
-- Use `# pragma: no cover` sparingly for untestable code
-
-**Type errors**:
-- Add type hints to function signatures
-- Use `# type: ignore` sparingly with explanation
-
-**Security warnings**:
-- Use `# nosec` comment for false positives
-- Document security decisions in code comments
+    I["ci-image.yml"] --> J["Build ghcr.io/{{GITHUB_OWNER}}/{{PROJECT_NAME}}-ci"]
+    J --> K["linux/amd64 + linux/arm64"]
+    K --> L["latest + sha tags"]
+    L --> C
+```
 
 ## Configuration Files
 
 | File | Purpose |
 |------|---------|
 | `.github/workflows/ci.yml` | Main CI workflow |
-| `.pre-commit-config.yaml` | Pre-commit hooks |
+| `.github/workflows/ci-image.yml` | CI image build/publish workflow |
+| `infra/ci/Dockerfile` | Shared CI image definition |
+| `infra/ci/docker-compose.ci.yml` | Local container shell matching CI |
+| `infra/ci/build-and-push.sh` | Manual multi-arch build/push helper |
+| `docs/CI_RUNNER.md` | Self-hosted runner operations guidance |
+| `.pre-commit-config.yaml` | Local pre-commit checks |
 | `pyproject.toml` | Tool configurations |
-| `.flake8` | flake8 settings |
-| `.pylintrc` | pylint settings |

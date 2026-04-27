@@ -50,16 +50,15 @@ Branch protection rules help maintain code quality by requiring specific checks 
 All CI checks must pass before merging:
 
 **Strict Status Checks:**
+- `Resolve Runner Target` - Runner selection and CI skip classification
 - `Lint and Code Quality` - Code formatting, linting, and type checking
+- `Coverage Check` - Coverage gate and report publishing
 - `Test Python 3.10` - Tests on Python 3.10
 - `Test Python 3.11` - Tests on Python 3.11
 - `Test Python 3.12` - Tests on Python 3.12
+- `Security Checks` - bandit and pip-audit gate
 - `Validate Configuration` - Configuration file validation
 - `CI Status Check` - Final CI status verification
-
-**Non-blocking Checks:**
-- `Security Checks` - Security scans (warnings allowed)
-- `Integration Tests` - Integration tests (when enabled)
 
 **Configuration:**
 - **Require branches to be up to date before merging**: Enabled
@@ -120,10 +119,13 @@ The configuration file is located at `scripts/github/branch-protection-config.js
 - [x] Require status checks to pass before merging
   - [x] Require branches to be up to date before merging
   - Add these status checks:
+    - `Resolve Runner Target`
     - `Lint and Code Quality`
+    - `Coverage Check`
     - `Test Python 3.10`
     - `Test Python 3.11`
     - `Test Python 3.12`
+    - `Security Checks`
     - `Validate Configuration`
     - `CI Status Check`
 - [x] Require conversation resolution before merging
@@ -144,10 +146,13 @@ gh api /repos/<owner>/<repo>/branches/main/protection --jq '.required_status_che
 
 # Expected output:
 # [
+#   "Resolve Runner Target",
 #   "Lint and Code Quality",
+#   "Coverage Check",
 #   "Test Python 3.10",
 #   "Test Python 3.11",
 #   "Test Python 3.12",
+#   "Security Checks",
 #   "Validate Configuration",
 #   "CI Status Check"
 # ]
@@ -248,6 +253,7 @@ git push --force-with-lease origin your-branch
 **Solution:**
 1. Check the exact status check name in a recent PR
 2. Update branch protection to use the exact name
+3. When CI jobs are renamed or added, keep `scripts/github/branch-protection-config.json` aligned with the workflow job names before reapplying protection
 
 ### Can't merge even though CI passes
 

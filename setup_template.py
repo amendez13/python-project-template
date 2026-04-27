@@ -67,11 +67,16 @@ TEMPLATE_VARS: Dict[str, Dict[str, str]] = {
         "default": "develop",
         "description": "Development branch name",
     },
+    "CI_RUNNER": {
+        "default": "github_hosted",
+        "description": "Default CI runner target (github_hosted, self_hosted_linux, self_hosted_linux_arm64)",
+    },
 }
 
 # Files to process (relative to project root)
 FILES_TO_PROCESS: List[str] = [
     ".github/workflows/ci.yml",
+    ".github/workflows/ci-image.yml",
     ".github/workflows/claude.yml",
     ".github/workflows/claude-code-review.yml",
     ".github/dependabot.yml",
@@ -82,12 +87,17 @@ FILES_TO_PROCESS: List[str] = [
     "CLAUDE.md",
     "README.md",
     "docs/INDEX.md",
+    "docs/AI_SKILLS.md",
     "docs/CI.md",
+    "docs/CI_RUNNER.md",
     "docs/SETUP.md",
     "docs/ARCHITECTURE.md",
     "docs/BRANCH_PROTECTION.md",
     "docs/planning/TASK_MANAGEMENT.md",
+    "TEMPLATE_USAGE.md",
     "config/config.example.yaml",
+    "infra/ci/build-and-push.sh",
+    "infra/home-worker/ci_runner_setup.yml",
     "scripts/github/setup-branch-protection.sh",
     "src/__init__.py",
     "src/main.py",
