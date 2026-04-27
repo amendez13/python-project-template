@@ -1,0 +1,17 @@
+[Unit]
+Description={{PROJECT_NAME}} <job> service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User={{PROJECT_NAME}}
+Group={{PROJECT_NAME}}
+WorkingDirectory=/opt/{{PROJECT_NAME}}
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/{{PROJECT_NAME}}/venv/bin/python -m {{SOURCE_DIR}}.main
+TimeoutStopSec=300
+SyslogIdentifier={{PROJECT_NAME}}
+
+[Install]
+WantedBy=multi-user.target

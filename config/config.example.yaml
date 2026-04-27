@@ -40,3 +40,21 @@ processing:
 
   # Enable dry run mode (no actual changes)
   dry_run: false
+
+observability:
+  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_level: INFO
+
+  # Console output style: human or json
+  log_format: human
+
+  # Optional JSONL file path for dual-sink logging
+  jsonl_log_path: ""
+
+  # Optional session-artifact pattern for long-running tasks
+  sessions:
+    enabled: false
+    sessions_dir: "data/sessions"
+    mode: "failures"
+    retention_days: 14
+    max_sessions: 100
