@@ -1,5 +1,6 @@
 # Config files with sensitive data
 config/config.yaml
+.mcp.json
 
 # Session-notes local configuration
 notes/.notes-config.yaml

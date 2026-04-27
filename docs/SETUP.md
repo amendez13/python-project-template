@@ -114,6 +114,20 @@ This template treats session notes as committed project history, not private scr
 - If you want the optional secondary summary-log workflow, copy `notes/.notes-config.yaml.example` to `notes/.notes-config.yaml` and customize the paths for your environment.
 - The canonical skill source for note automation lives at `ai-skills/session-notes/`. If you use the shared AI-skills deployment pattern, deploy that skill to your local agent harnesses after editing it.
 
+## MCP Configuration
+
+The template ships `.mcp.json.example` as a generic starting point for local MCP server configuration.
+
+```bash
+cp .mcp.json.example .mcp.json
+```
+
+Then customize the server list for your project and local tools.
+
+- `.mcp.json` is intentionally ignored by git because each developer's MCP setup is local.
+- Keep `.mcp.json.example` generic and safe to commit.
+- If your project depends on a required MCP server, document that requirement here or in a project-specific operations guide.
+
 ## Development Setup
 
 ### Install Pre-commit Hooks
@@ -144,6 +158,20 @@ The deploy script renders:
 - Codex interface metadata to `~/.codex/skills/<name>/agents/openai.yaml`
 
 See [AI_SKILLS.md](AI_SKILLS.md) for the canonical source layout, starter skills, and troubleshooting guidance.
+
+### Claude Permissions And Fewer Prompts
+
+`.claude/settings.local.json` is the committed baseline allowlist for Claude Code in this template.
+
+- Expand it when the project consistently uses the same safe local commands.
+- Keep the list narrow enough that new or risky commands still require a prompt.
+- Treat it as an audit trail for the "fewer permission prompts" workflow rather than a place to allow everything.
+
+Typical additions in this template include:
+- `git` and `gh` commands used during issue delivery
+- `pre-commit`, `pytest`, and static-analysis commands
+- `ansible-playbook` and the local AI-skills deploy wrapper
+- common filesystem inspection commands needed during template setup work
 
 ### Line Length Recommendation
 

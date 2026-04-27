@@ -75,7 +75,8 @@ app:
 ├── docs/                 # Documentation
 ├── {{SOURCE_DIR}}/       # Source code
 ├── {{TEST_DIR}}/         # Test files
-├── CLAUDE.md             # AI assistant guidance
+├── AGENTS.md             # Source-of-truth agent guidance
+├── CLAUDE.md             # Symlink to AGENTS.md for Claude compatibility
 ├── README.md             # This file
 ├── pyproject.toml        # Tool configuration
 └── requirements.txt      # Dependencies
@@ -131,6 +132,7 @@ See [docs/CI.md](docs/CI.md) for details.
 - [Documentation Index](docs/INDEX.md) - All documentation
 - [Setup Guide](docs/SETUP.md) - Installation and configuration
 - [CI Documentation](docs/CI.md) - CI/CD pipeline details
+- [AI Skills](docs/AI_SKILLS.md) - Canonical AI-skill source and deploy workflow
 
 ## Contributing
 
