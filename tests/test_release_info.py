@@ -7,7 +7,6 @@ from types import SimpleNamespace
 
 from tests.module_loader import import_source_module
 
-
 release_info_module = import_source_module("release_info")
 
 

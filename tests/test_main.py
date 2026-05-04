@@ -2,7 +2,6 @@
 
 from tests.module_loader import import_source_module
 
-
 greet = import_source_module("main").greet
 
 

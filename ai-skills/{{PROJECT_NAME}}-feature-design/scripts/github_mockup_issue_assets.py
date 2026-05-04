@@ -178,8 +178,7 @@ def upload_images(page: Any, target_url: str, images: Sequence[CapturedImage], t
         page.wait_for_timeout(1_000)
 
     raise RuntimeError(
-        "Timed out waiting for GitHub attachment URLs to appear in the comment form. "
-        f"Last textarea value: {last_value!r}"
+        "Timed out waiting for GitHub attachment URLs to appear in the comment form. " f"Last textarea value: {last_value!r}"
     )
 
 

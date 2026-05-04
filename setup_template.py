@@ -9,13 +9,11 @@ Usage:
 """
 
 import os
-import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-
 
 # Template variables with their defaults and descriptions
 TEMPLATE_VARS: Dict[str, Dict[str, str]] = {
@@ -111,10 +109,26 @@ FILES_TO_PROCESS: List[str] = [
     "src/release_info.py",
     "tests/__init__.py",
     "tests/conftest.py",
+    "tests/test_github_mockup_issue_assets.py",
     "tests/test_logging_config.py",
     "tests/test_main.py",
     "tests/test_release_info.py",
 ]
+
+ADDITIONAL_TEMPLATE_DIRS: List[str] = ["ai-skills"]
+
+TEMPLATE_TEXT_SUFFIXES = {
+    ".cfg",
+    ".ini",
+    ".j2",
+    ".json",
+    ".md",
+    ".py",
+    ".sh",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
 
 # Directories that may need renaming
 DIRECTORIES_TO_RENAME: List[str] = ["src", "tests"]
@@ -182,9 +196,29 @@ def replace_in_file(file_path: Path, replacements: Dict[str, str]) -> bool:
         return False
 
 
-def rename_directory(
-    project_root: Path, old_name: str, new_name: str
-) -> Optional[Path]:
+def iter_additional_template_files(project_root: Path) -> List[Path]:
+    """Find additional text template files outside the fixed file list.
+
+    This keeps canonical AI skills template-aware without requiring every
+    resource file to be named in FILES_TO_PROCESS by hand.
+    """
+    template_files: List[Path] = []
+
+    for directory in ADDITIONAL_TEMPLATE_DIRS:
+        base_path = project_root / directory
+        if not base_path.exists():
+            continue
+        for file_path in sorted(base_path.rglob("*")):
+            if not file_path.is_file():
+                continue
+            if file_path.suffix not in TEMPLATE_TEXT_SUFFIXES:
+                continue
+            template_files.append(file_path)
+
+    return template_files
+
+
+def rename_directory(project_root: Path, old_name: str, new_name: str) -> Optional[Path]:
     """Rename a directory if the new name is different.
 
     Args:
@@ -210,9 +244,7 @@ def rename_directory(
     return None
 
 
-def update_file_references(
-    project_root: Path, old_name: str, new_name: str
-) -> None:
+def update_file_references(project_root: Path, old_name: str, new_name: str) -> None:
     """Update references to renamed directories in files.
 
     Args:
@@ -264,6 +296,8 @@ def rename_template_paths(project_root: Path, replacements: Dict[str, str]) -> i
     )
 
     for path in paths:
+        if not path.exists():
+            continue
         relative_path = path.relative_to(project_root)
         rendered_relative_path = render_template_path(relative_path, replacements)
         if rendered_relative_path == relative_path:
@@ -271,6 +305,9 @@ def rename_template_paths(project_root: Path, replacements: Dict[str, str]) -> i
 
         target_path = project_root / rendered_relative_path
         target_path.parent.mkdir(parents=True, exist_ok=True)
+        if target_path.exists() and path.is_dir() and not any(path.iterdir()):
+            path.rmdir()
+            continue
         path.rename(target_path)
         renamed_count += 1
 
@@ -344,9 +381,7 @@ def install_pre_commit(project_root: Path) -> bool:
         return False
 
 
-def setup_branch_protection(
-    project_root: Path, github_owner: str, project_name: str, main_branch: str
-) -> bool:
+def setup_branch_protection(project_root: Path, github_owner: str, project_name: str, main_branch: str) -> bool:
     """Configure branch protection rules via GitHub API.
 
     Args:
@@ -368,7 +403,7 @@ def setup_branch_protection(
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("  Warning: GitHub CLI not authenticated or not installed")
         print("  Run 'gh auth login' first, then run:")
-        print(f"  ./scripts/github/setup-branch-protection.sh")
+        print("  ./scripts/github/setup-branch-protection.sh")
         return False
 
     config_file = project_root / "scripts" / "github" / "branch-protection-config.json"
@@ -382,23 +417,27 @@ def setup_branch_protection(
     try:
         subprocess.run(
             [
-                "gh", "api", "-X", "PUT",
+                "gh",
+                "api",
+                "-X",
+                "PUT",
                 f"/repos/{repo}/branches/{main_branch}/protection",
-                "--input", str(config_file),
+                "--input",
+                str(config_file),
             ],
             capture_output=True,
             check=True,
         )
         return True
     except subprocess.CalledProcessError as e:
-        print(f"  Warning: Failed to apply branch protection")
+        print("  Warning: Failed to apply branch protection")
         print(f"  Error: {e.stderr.decode() if e.stderr else 'Unknown error'}")
-        print(f"  You can apply it manually later with:")
-        print(f"  ./scripts/github/setup-branch-protection.sh")
+        print("  You can apply it manually later with:")
+        print("  ./scripts/github/setup-branch-protection.sh")
         return False
 
 
-def main() -> int:
+def main() -> int:  # noqa: C901 - setup flow is intentionally linear and prompt-driven.
     """Main entry point.
 
     Returns:
@@ -416,9 +455,11 @@ def main() -> int:
 
     # Process all template files
     modified_count = 0
+    processed_paths: set[Path] = set()
     for file_rel_path in FILES_TO_PROCESS:
         file_path = project_root / file_rel_path
         if file_path.exists():
+            processed_paths.add(file_path.resolve())
             if replace_in_file(file_path, values):
                 print(f"  Updated: {file_rel_path}")
                 modified_count += 1
@@ -428,14 +469,21 @@ def main() -> int:
             if file_rel_path.startswith("src/"):
                 new_path = file_rel_path.replace("src/", values["SOURCE_DIR"] + "/", 1)
             elif file_rel_path.startswith("tests/"):
-                new_path = file_rel_path.replace(
-                    "tests/", values["TEST_DIR"] + "/", 1
-                )
+                new_path = file_rel_path.replace("tests/", values["TEST_DIR"] + "/", 1)
             file_path = project_root / new_path
             if file_path.exists():
+                processed_paths.add(file_path.resolve())
                 if replace_in_file(file_path, values):
                     print(f"  Updated: {new_path}")
                     modified_count += 1
+
+    for file_path in iter_additional_template_files(project_root):
+        if file_path.resolve() in processed_paths:
+            continue
+        if replace_in_file(file_path, values):
+            print(f"  Updated: {file_path.relative_to(project_root)}")
+            modified_count += 1
+        processed_paths.add(file_path.resolve())
 
     print(f"\n  Modified {modified_count} files")
 
@@ -509,7 +557,8 @@ def main() -> int:
     print("  1. Review the generated files")
     print("  2. Install dependencies: pip install -r requirements-dev.txt")
     print("  3. Run tests: pytest")
-    print("  4. Start coding!")
+    print("  4. Deploy project-specific AI skills: ./scripts/deploy_ai_skills.sh")
+    print("  5. Start coding!")
     print()
 
     return 0

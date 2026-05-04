@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import importlib.util
-from pathlib import Path
 import sys
-
+from pathlib import Path
 
 MODULE_PATH = (
     Path(__file__).resolve().parents[1]
     / "ai-skills"
-    / "feature-design"
+    / "{{PROJECT_NAME}}-feature-design"
     / "scripts"
     / "github_mockup_issue_assets.py"
 )
@@ -32,10 +31,7 @@ def test_build_target_url_for_issue() -> None:
 
 def test_build_target_url_for_pr() -> None:
     """PR URLs should use the pull path."""
-    assert (
-        github_mockup_issue_assets.build_target_url("openai/example", None, 7)
-        == "https://github.com/openai/example/pull/7"
-    )
+    assert github_mockup_issue_assets.build_target_url("openai/example", None, 7) == "https://github.com/openai/example/pull/7"
 
 
 def test_parse_selector_line_supports_explicit_slug() -> None:

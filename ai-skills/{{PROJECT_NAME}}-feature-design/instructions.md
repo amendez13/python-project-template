@@ -1,6 +1,6 @@
-# Feature Design
+# {{PROJECT_NAME}} Feature Design
 
-Use this skill when the task is not to implement a feature yet, but to design it well enough that developers can execute it cleanly.
+Use this skill when the task is not to implement a {{PROJECT_NAME}} feature yet, but to design it well enough that developers can execute it cleanly.
 
 Read first:
 - `AGENTS.md`

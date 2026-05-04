@@ -1,6 +1,6 @@
-# Example Skill
+# {{PROJECT_NAME}} Example Skill
 
-Use this directory as the smallest starting point for a new canonical skill.
+Use this directory as the smallest starting point for a new canonical {{PROJECT_NAME}} skill.
 
 Workflow:
 1. Rename the directory and update `skill.yaml`.
