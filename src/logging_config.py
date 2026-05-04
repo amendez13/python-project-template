@@ -47,10 +47,7 @@ def set_log_context(*, session_id: str = "", task_id: str = "", phase: str = "")
 def get_log_context_payload() -> dict[str, str | None]:
     """Return the current correlation fields as a JSON-friendly payload."""
     context = asdict(get_log_context())
-    return {
-        key: value or None
-        for key, value in context.items()
-    }
+    return {key: value or None for key, value in context.items()}
 
 
 class JSONFormatter(logging.Formatter):
@@ -92,9 +89,7 @@ def configure_logging(
         handler.close()
 
     stderr_handler = logging.StreamHandler()
-    stderr_handler.setFormatter(
-        logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s")
-    )
+    stderr_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s"))
     root_logger.addHandler(stderr_handler)
 
     if not jsonl_path:

@@ -1,0 +1,7 @@
+name: "{{PROJECT_NAME}}-session-notes"
+description: Use when creating or updating {{PROJECT_NAME}} daily session notes. Optionally update a secondary summary log when the user explicitly asks for it.
+codex:
+  interface:
+    display_name: "{{PROJECT_NAME}} Session Notes"
+    short_description: Update {{PROJECT_NAME}} session notes
+    default_prompt: Use ${{PROJECT_NAME}}-session-notes to update today's {{PROJECT_NAME}} session notes.

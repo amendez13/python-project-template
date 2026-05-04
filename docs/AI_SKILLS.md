@@ -2,6 +2,8 @@
 
 This template ships a canonical `ai-skills/` source tree that renders to both Claude and Codex. The source files live in the repository once, and the deploy workflow writes the harness-specific outputs into `~/.claude/skills/` and `~/.codex/skills/`.
 
+During `setup_template.py`, shipped skill directories and manifests are rendered with the project name. For example, `ai-skills/{{PROJECT_NAME}}-feature-delivery/skill.yaml` becomes a skill named `{{PROJECT_NAME}}-feature-delivery`. This avoids different projects overwriting the same global `feature-delivery` skill in `~/.codex/skills` or `~/.claude/skills`.
+
 ## Why use a canonical source
 
 Using one source of truth avoids drift between platform-specific skill directories:
@@ -12,24 +14,24 @@ Using one source of truth avoids drift between platform-specific skill directori
 ## Starter skills
 
 The template ships:
-- `example-skill`
+- `{{PROJECT_NAME}}-example-skill`
   - Minimal copyable scaffold with a manifest, instructions, and a stub helper script.
-- `feature-delivery`
+- `{{PROJECT_NAME}}-feature-delivery`
   - Guides issue-driven delivery from branch creation through tests, PR, CI, review, merge, and cleanup.
-- `feature-design`
+- `{{PROJECT_NAME}}-feature-design`
   - Guides turning rough requests into implementation-ready GitHub issues and includes a helper for mockup screenshot uploads.
-- `session-notes`
+- `{{PROJECT_NAME}}-session-notes`
   - Documents the committed session-notes workflow used by this repository.
 
-Use `example-skill` as the smallest starting point and the other shipped skills as fuller reference implementations.
+Use `{{PROJECT_NAME}}-example-skill` as the smallest starting point and the other shipped skills as fuller reference implementations.
 
 ## Canonical structure
 
-Each skill lives under `ai-skills/<skill-name>/`:
+Each skill lives under `ai-skills/<project-name>-<skill-name>/`:
 
 ```text
 ai-skills/
-  <skill-name>/
+  <project-name>-<skill-name>/
     skill.yaml
     instructions.md
     references/   # optional
@@ -40,13 +42,13 @@ ai-skills/
 `skill.yaml` contains the shared manifest plus Codex UI metadata:
 
 ```yaml
-name: example-skill
-description: One-line description used by both Claude and Codex.
+name: {{PROJECT_NAME}}-example-skill
+description: One-line project-specific description used by both Claude and Codex.
 codex:
   interface:
-    display_name: Example Skill
+    display_name: {{PROJECT_NAME}} Example Skill
     short_description: Short label shown in Codex UI
-    default_prompt: Use $example-skill to do the thing.
+    default_prompt: Use ${{PROJECT_NAME}}-example-skill to do the thing.
 ```
 
 ## Deploy locally
@@ -71,13 +73,13 @@ The deploy workflow:
 
 ## Add a new skill
 
-1. Create `ai-skills/<name>/skill.yaml`.
-2. Write the skill body in `ai-skills/<name>/instructions.md`.
+1. Create `ai-skills/{{PROJECT_NAME}}-<name>/skill.yaml`.
+2. Write the skill body in `ai-skills/{{PROJECT_NAME}}-<name>/instructions.md`.
 3. Add optional `references/`, `scripts/`, or `assets/` directories when the skill needs them.
 4. Run `./scripts/deploy_ai_skills.sh`.
-5. Confirm the rendered files appear under both `~/.claude/skills/<name>/` and `~/.codex/skills/<name>/`.
+5. Confirm the rendered files appear under both `~/.claude/skills/{{PROJECT_NAME}}-<name>/` and `~/.codex/skills/{{PROJECT_NAME}}-<name>/`.
 
-Use `example-skill` for the minimal scaffold and `feature-delivery` / `feature-design` for fuller worked examples of naming, manifest structure, and guidance depth.
+Use `{{PROJECT_NAME}}-example-skill` for the minimal scaffold and `{{PROJECT_NAME}}-feature-delivery` / `{{PROJECT_NAME}}-feature-design` for fuller worked examples of naming, manifest structure, and guidance depth.
 
 ## Rendering differences
 

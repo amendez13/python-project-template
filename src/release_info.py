@@ -7,7 +7,6 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _VERSION_FILE = _REPO_ROOT / "VERSION"
 

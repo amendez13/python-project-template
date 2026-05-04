@@ -1,0 +1,7 @@
+name: "{{PROJECT_NAME}}-example-skill"
+description: Use when you need a minimal copyable scaffold for a new {{PROJECT_NAME}} Claude/Codex skill.
+codex:
+  interface:
+    display_name: "{{PROJECT_NAME}} Example Skill"
+    short_description: Minimal {{PROJECT_NAME}} skill scaffold
+    default_prompt: Use ${{PROJECT_NAME}}-example-skill as a starting point for a new {{PROJECT_NAME}} skill.

@@ -8,7 +8,6 @@ from pathlib import Path
 
 from tests.module_loader import import_source_module
 
-
 logging_config = import_source_module("logging_config")
 JSONFormatter = logging_config.JSONFormatter
 configure_logging = logging_config.configure_logging

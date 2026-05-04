@@ -1,6 +1,6 @@
-# Session Notes
+# {{PROJECT_NAME}} Session Notes
 
-Use this skill when creating or updating daily session notes.
+Use this skill when creating or updating {{PROJECT_NAME}} daily session notes.
 
 Read first:
 - `AGENTS.md`

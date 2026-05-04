@@ -8,7 +8,6 @@ from typing import Optional
 from .logging_config import configure_logging
 from .release_info import get_release_info
 
-
 LOGGER = logging.getLogger(__name__)
 
 
