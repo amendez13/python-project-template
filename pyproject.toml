@@ -1,5 +1,5 @@
 [tool.black]
-line-length = {{MAX_LINE_LENGTH}}
+line-length = 127  # TEMPLATE_VAR:MAX_LINE_LENGTH
 target-version = ['py310', 'py311', 'py312']
 include = '\.pyi?$'
 exclude = '''
@@ -15,7 +15,7 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-line_length = {{MAX_LINE_LENGTH}}
+line_length = 127  # TEMPLATE_VAR:MAX_LINE_LENGTH
 skip_gitignore = true
 skip = [".venv", "venv", "build", "dist"]
 

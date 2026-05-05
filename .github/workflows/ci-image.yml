@@ -2,7 +2,8 @@ name: Build CI Image
 
 on:
   push:
-    branches: [ {{MAIN_BRANCH}} ]
+    branches:
+      - "{{MAIN_BRANCH}}"
     paths:
       - 'infra/ci/Dockerfile'
       - 'requirements.txt'

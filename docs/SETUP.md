@@ -140,6 +140,18 @@ pre-commit install
 pre-commit run --all-files
 ```
 
+Because this template includes the official `gitleaks` hook, the `pre-commit>=3.6.0` requirement in `requirements-dev.txt` matters: modern `pre-commit` can bootstrap the hook's Go toolchain automatically.
+
+### Enable Repository Security Features
+
+After the repository exists on GitHub, review and enable the baseline security features described in [SECURITY_BASELINE.md](SECURITY_BASELINE.md):
+
+- secret scanning
+- push protection
+- CodeQL default setup
+
+These features are configured in GitHub, not in the local bootstrap commands above.
+
 ### Deploy AI Skills
 
 The template ships canonical AI skill sources under `ai-skills/` and a deploy flow that renders them to both Claude and Codex:
@@ -174,6 +186,7 @@ See [AI_SKILLS.md](AI_SKILLS.md) for the canonical source layout, starter skills
 Typical additions in this template include:
 - `git` and `gh` commands used during issue delivery
 - `pre-commit`, `pytest`, and static-analysis commands
+- `gitleaks` when you run manual repository scans outside pre-commit
 - `ansible-playbook` and the local AI-skills deploy wrapper
 - common filesystem inspection commands needed during template setup work
 
@@ -244,4 +257,5 @@ cp config/config.example.yaml config/config.yaml
 - Check the [Documentation Index](INDEX.md)
 - Review [notes/README.md](../notes/README.md) for note conventions
 - Review [CI documentation](CI.md) for testing issues
+- Review [SECURITY_BASELINE.md](SECURITY_BASELINE.md) for secret-scanning setup and GitHub security features
 - Open an issue on GitHub

@@ -64,3 +64,35 @@ def test_ensure_claude_symlink_recreates_expected_symlink(tmp_path: Path) -> Non
     assert setup_template.ensure_claude_symlink(tmp_path) is True
     assert (tmp_path / "CLAUDE.md").is_symlink()
     assert (tmp_path / "CLAUDE.md").resolve() == (tmp_path / "AGENTS.md")
+
+
+def test_replace_in_file_renders_template_var_marker_values(tmp_path: Path) -> None:
+    config_file = tmp_path / "pyproject.toml"
+    config_file.write_text(
+        "[tool.black]\nline-length = 127  # TEMPLATE_VAR:MAX_LINE_LENGTH\n",
+        encoding="utf-8",
+    )
+
+    replaced = setup_template.replace_in_file(
+        config_file,
+        {"MAX_LINE_LENGTH": "99"},
+    )
+
+    assert replaced is True
+    assert config_file.read_text(encoding="utf-8") == "[tool.black]\nline-length = 99\n"
+
+
+def test_replace_in_file_renders_standalone_template_var_markers(tmp_path: Path) -> None:
+    config_file = tmp_path / ".flake8"
+    config_file.write_text(
+        "[flake8]\n# TEMPLATE_VAR:MAX_COMPLEXITY\nmax-complexity = 10\n",
+        encoding="utf-8",
+    )
+
+    replaced = setup_template.replace_in_file(
+        config_file,
+        {"MAX_COMPLEXITY": "12"},
+    )
+
+    assert replaced is True
+    assert config_file.read_text(encoding="utf-8") == "[flake8]\nmax-complexity = 12\n"
