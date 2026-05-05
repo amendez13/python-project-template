@@ -11,7 +11,8 @@ disable=
     W0212,  # protected-access
 
 [FORMAT]
-max-line-length={{MAX_LINE_LENGTH}}
+# TEMPLATE_VAR:MAX_LINE_LENGTH
+max-line-length=127
 indent-string='    '
 
 [BASIC]

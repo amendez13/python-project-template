@@ -9,6 +9,7 @@ Usage:
 """
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -186,6 +187,18 @@ def replace_in_file(file_path: Path, replacements: Dict[str, str]) -> bool:
         for var_name, value in replacements.items():
             pattern = "{{" + var_name + "}}"
             content = content.replace(pattern, value)
+            assignment_pattern = (
+                r"^(?P<prefix>\s*[^#\n=]+=\s*)(?P<current>[^#\n]+?)\s*#\s*TEMPLATE_VAR:"
+                rf"{re.escape(var_name)}(?P<newline>\n?)$"
+            )
+            content = re.sub(
+                assignment_pattern,
+                lambda match: f"{match.group('prefix')}{value}{match.group('newline')}",
+                content,
+                flags=re.MULTILINE,
+            )
+
+        content = render_template_assignment_markers(content, replacements)
 
         if content != original_content:
             file_path.write_text(content, encoding="utf-8")
@@ -194,6 +207,32 @@ def replace_in_file(file_path: Path, replacements: Dict[str, str]) -> bool:
     except Exception as e:
         print(f"  Warning: Could not process {file_path}: {e}")
         return False
+
+
+def render_template_assignment_markers(content: str, replacements: Dict[str, str]) -> str:
+    """Render standalone template markers that apply to the next assignment line."""
+    rendered_lines: List[str] = []
+    pending_var: Optional[str] = None
+
+    for line in content.splitlines(keepends=True):
+        stripped = line.strip()
+        if stripped.startswith("# TEMPLATE_VAR:"):
+            pending_var = stripped.removeprefix("# TEMPLATE_VAR:").strip()
+            continue
+
+        if pending_var is not None:
+            value = replacements.get(pending_var)
+            assignment = re.match(r"(?P<prefix>\s*[^#\n=]+=\s*)(?P<current>.*?)(?P<newline>\n?)$", line)
+            if assignment is not None and value is not None:
+                rendered_lines.append(f"{assignment.group('prefix')}{value}{assignment.group('newline')}")
+            else:
+                rendered_lines.append(line)
+            pending_var = None
+            continue
+
+        rendered_lines.append(line)
+
+    return "".join(rendered_lines)
 
 
 def iter_additional_template_files(project_root: Path) -> List[Path]:

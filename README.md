@@ -113,8 +113,9 @@ This project uses:
 - **mypy** for type checking
 - **bandit** for security scanning
 - **pip-audit** for dependency vulnerability checking
+- **gitleaks** for secret detection in commits and repository history
 
-All checks run automatically via pre-commit hooks and CI.
+Baseline checks run automatically via pre-commit hooks and GitHub Actions.
 
 ## CI/CD
 
@@ -124,6 +125,7 @@ GitHub Actions runs the following checks on every push and PR:
 2. **Test**: pytest across Python {{PYTHON_VERSIONS}}
 3. **Coverage**: {{COVERAGE_THRESHOLD}}% minimum coverage
 4. **Security**: bandit and pip-audit
+5. **Secret scanning**: gitleaks against repository history with redacted reporting
 
 See [docs/CI.md](docs/CI.md) for details.
 
@@ -132,6 +134,7 @@ See [docs/CI.md](docs/CI.md) for details.
 - [Documentation Index](docs/INDEX.md) - All documentation
 - [Setup Guide](docs/SETUP.md) - Installation and configuration
 - [CI Documentation](docs/CI.md) - CI/CD pipeline details
+- [Security Baseline](docs/SECURITY_BASELINE.md) - Secret scanning and recommended GitHub security features
 - [AI Skills](docs/AI_SKILLS.md) - Canonical AI-skill source and deploy workflow
 
 ## Contributing

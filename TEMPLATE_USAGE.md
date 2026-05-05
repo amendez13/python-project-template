@@ -61,6 +61,7 @@ python-project-template/
 │   ├── workflows/
 │   │   ├── ci.yml                 # Main CI pipeline
 │   │   ├── ci-image.yml           # Shared CI image build/publish workflow
+│   │   ├── gitleaks.yml           # Repository secret-scanning workflow
 │   │   ├── release.yml            # Manual + release-event deployment workflow
 │   │   ├── claude.yml             # Claude Code automation
 │   │   └── claude-code-review.yml # AI code review
@@ -85,6 +86,7 @@ python-project-template/
 │   ├── ARCHITECTURE.md            # Technical design
 │   ├── CI.md                      # CI/CD documentation
 │   ├── CI_RUNNER.md               # Self-hosted runner and CI image guide
+│   ├── SECURITY_BASELINE.md       # Secret scanning and GitHub security baseline
 │   ├── RELEASE_WORKFLOW.md        # Release deployment workflow guide
 │   ├── DEPLOYMENT.md              # Manual deployment runbook
 │   ├── BRANCH_PROTECTION.md       # Branch protection documentation
@@ -152,6 +154,7 @@ python-project-template/
 - **Test job**: pytest across Python 3.10, 3.11, 3.12 after coverage passes
 - **Coverage job**: Enforces coverage threshold with HTML reports
 - **Security job**: bandit and pip-audit scanning
+- **Secret-scanning workflow**: gitleaks on pushes, PRs, and manual dispatch
 - **Config validation**: YAML and Python syntax checks
 - **Smart skip logic**: docs-only diffs and merged-PR pushes to `main` skip heavy jobs but still report `CI Status Check`
 
@@ -206,22 +209,20 @@ Recommended GitHub Secrets for the release pipeline:
 
 ### Pre-commit Hooks
 
-9 hooks configured:
-1. Black (code formatting)
-2. isort (import sorting)
-3. flake8 (linting)
-4. mypy (type checking)
-5. bandit (security scanning)
-6. pip-audit (dependency vulnerabilities)
-7. trailing-whitespace
-8. end-of-file-fixer
-9. check-yaml
+The template includes formatting, linting, typing, dependency, secret-scanning, and generic hygiene hooks.
+
+Security-focused hooks include:
+- `bandit`
+- `pip-audit`
+- `gitleaks`
+- `detect-private-key`
 
 ### Branch Protection (`scripts/github/`)
 
 Automated branch protection configuration:
 
 - **Required status checks**: All CI jobs must pass
+- **Security gate**: `Secret Scanning` can be required alongside the CI aggregate checks
 - **Linear history**: No merge commits (squash or rebase only)
 - **Conversation resolution**: All review comments must be resolved
 - **Force push protection**: Prevents accidental history overwrites
@@ -243,6 +244,7 @@ See `docs/BRANCH_PROTECTION.md` for full documentation.
 - `docs/AI_SKILLS.md` - Canonical AI skills structure and deploy workflow
 - `docs/CI.md` - CI/CD pipeline documentation
 - `docs/CI_RUNNER.md` - Self-hosted runner operations and CI image contract
+- `docs/SECURITY_BASELINE.md` - Secret scanning baseline and GitHub security setup
 - `docs/RELEASE_WORKFLOW.md` - Release deployment workflow documentation
 - `docs/DEPLOYMENT.md` - Manual deployment and rollback runbook
 - `docs/SETUP.md` - Installation and configuration guide
@@ -310,6 +312,7 @@ After running `setup_template.py`:
 3. **Configure GitHub** (if using Claude workflows):
    - Add `CLAUDE_CODE_OAUTH_TOKEN` secret to repository
    - Enable GitHub Actions
+   - Review `docs/SECURITY_BASELINE.md` and enable GitHub secret scanning, push protection, and CodeQL where available
 
 4. **Start developing**:
    - Add your code to `src/`

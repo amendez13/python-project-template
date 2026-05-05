@@ -60,7 +60,7 @@ def test_render_snippet_includes_selector_metadata() -> None:
     image = github_mockup_issue_assets.CapturedImage(
         slug="hero-card",
         selector=".hero-card",
-        path=Path("/tmp/hero-card.png"),
+        path=Path("artifacts/hero-card.png"),
     )
     rendered = github_mockup_issue_assets.render_snippet(
         [image],

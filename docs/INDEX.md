@@ -51,6 +51,10 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Structured logging and operator observability patterns
 - systemd naming, Loki integration, and session-artifact guidance
 
+**[SECURITY_BASELINE.md](SECURITY_BASELINE.md)**
+- Baseline secret scanning and repository security guidance
+- GitHub secret scanning, push protection, and CodeQL setup references
+
 **[RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md)**
 - Release automation trigger model
 - Deployment status updates on GitHub Releases
@@ -99,6 +103,10 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Local development workflow
 - Running CI checks locally
 - Troubleshooting CI failures
+
+**[SECURITY_BASELINE.md](SECURITY_BASELINE.md)**
+- Template-level secret scanning workflow and pre-commit baseline
+- Post-creation GitHub security features to enable
 
 **[CI_RUNNER.md](CI_RUNNER.md)**
 - GitHub-hosted vs self-hosted runner guidance
@@ -172,6 +180,7 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 | [AI_SKILLS.md](AI_SKILLS.md) | AI skill source, deploy, and starter-skill guide | Developers |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Technical architecture and design | Developers |
 | [CI.md](CI.md) | CI/CD pipeline and development workflow | Developers |
+| [SECURITY_BASELINE.md](SECURITY_BASELINE.md) | Secret scanning baseline and GitHub security setup | Developers, operators |
 | [CI_RUNNER.md](CI_RUNNER.md) | Self-hosted runner operations and CI image contract | Developers, operators |
 | [OBSERVABILITY.md](OBSERVABILITY.md) | Logging, health, Loki, and operator runbook patterns | Developers, operators |
 | [RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md) | Release deployment automation guide | Developers, operators |

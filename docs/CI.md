@@ -1,6 +1,6 @@
 # CI/CD Pipeline Documentation
 
-This document describes the Continuous Integration pipeline for {{PROJECT_NAME}}, including the Docker CI image, runner-resolution workflow, and the local validation path that mirrors GitHub Actions.
+This document describes the Continuous Integration pipeline for {{PROJECT_NAME}}, including the Docker CI image, runner-resolution workflow, the companion secret-scanning workflow, and the local validation path that mirrors GitHub Actions.
 
 ## Overview
 
@@ -80,6 +80,19 @@ Purpose: validate YAML configuration and Python syntax.
 
 Purpose: aggregate job outcomes and publish the final required status, including intentional skip reasons.
 
+## Companion Security Workflow (`.github/workflows/gitleaks.yml`)
+
+The template also includes a dedicated `Secret Scanning` workflow for repository-level secret detection:
+
+- triggers on `push`, `pull_request`, and `workflow_dispatch`
+- checks out the full git history with `fetch-depth: 0`
+- installs a pinned `gitleaks` release and verifies its checksum
+- generates a redacted SARIF report
+- uploads the redacted SARIF artifact on every run
+- attempts a best-effort upload to GitHub code scanning when the repository supports SARIF ingestion
+
+This workflow is separate from `ci.yml` because secret scanning has different runtime and reporting needs than the containerized application checks.
+
 ## CI Image Workflow (`.github/workflows/ci-image.yml`)
 
 The CI image workflow rebuilds and publishes the shared image when these inputs change:
@@ -128,6 +141,8 @@ pytest {{TEST_DIR}}/ -v --cov={{SOURCE_DIR}} --cov-report=term-missing --cov-fai
 pytest {{TEST_DIR}}/ -v
 bandit -r {{SOURCE_DIR}}/ -ll
 pip-audit --requirement requirements.txt
+gitleaks dir . --no-banner --redact=100
+gitleaks git . --no-banner --redact=100
 ```
 
 ## Containerized CI Architecture
@@ -158,9 +173,11 @@ flowchart LR
 |------|---------|
 | `.github/workflows/ci.yml` | Main CI workflow |
 | `.github/workflows/ci-image.yml` | CI image build/publish workflow |
+| `.github/workflows/gitleaks.yml` | Repository secret-scanning workflow |
 | `infra/ci/Dockerfile` | Shared CI image definition |
 | `infra/ci/docker-compose.ci.yml` | Local container shell matching CI |
 | `infra/ci/build-and-push.sh` | Manual multi-arch build/push helper |
 | `docs/CI_RUNNER.md` | Self-hosted runner operations guidance |
+| `docs/SECURITY_BASELINE.md` | Secret scanning and GitHub security baseline |
 | `.pre-commit-config.yaml` | Local pre-commit checks |
 | `pyproject.toml` | Tool configurations |

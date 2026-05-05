@@ -2,15 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [ {{MAIN_BRANCH}}, {{DEV_BRANCH}} ]
+    branches:
+      - "{{MAIN_BRANCH}}"
+      - "{{DEV_BRANCH}}"
   pull_request:
-    branches: [ {{MAIN_BRANCH}}, {{DEV_BRANCH}} ]
+    branches:
+      - "{{MAIN_BRANCH}}"
+      - "{{DEV_BRANCH}}"
   workflow_dispatch:
     inputs:
       runner_target:
         description: Runner target for this manual CI run
         required: false
-        default: {{CI_RUNNER}}
+        default: "{{CI_RUNNER}}"
         type: choice
         options:
           - github_hosted
@@ -28,7 +32,7 @@ permissions:
   pull-requests: read
 
 env:
-  DEFAULT_RUNNER: {{CI_RUNNER}}
+  DEFAULT_RUNNER: "{{CI_RUNNER}}"
 
 jobs:
   resolve-runner:
