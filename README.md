@@ -149,7 +149,7 @@ See [docs/CI.md](docs/CI.md) for details.
 
 ## License
 
-[Choose your license]
+This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
