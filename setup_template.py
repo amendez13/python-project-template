@@ -8,13 +8,14 @@ Usage:
     python setup_template.py
 """
 
+import datetime
 import os
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 # Template variables with their defaults and descriptions
 TEMPLATE_VARS: Dict[str, Dict[str, str]] = {
@@ -70,65 +71,46 @@ TEMPLATE_VARS: Dict[str, Dict[str, str]] = {
         "default": "github_hosted",
         "description": "Default CI runner target (github_hosted, self_hosted_linux, self_hosted_linux_arm64)",
     },
+    "YEAR": {
+        "default": str(datetime.date.today().year),
+        "description": "Copyright year (used in LICENSE)",
+    },
 }
 
-# Files to process (relative to project root)
-FILES_TO_PROCESS: List[str] = [
-    ".github/workflows/ci.yml",
-    ".github/workflows/ci-image.yml",
-    ".github/workflows/claude.yml",
-    ".github/workflows/claude-code-review.yml",
-    ".github/dependabot.yml",
-    ".pre-commit-config.yaml",
-    "pyproject.toml",
-    ".flake8",
-    ".pylintrc",
-    "AGENTS.md",
-    "README.md",
-    "docs/INDEX.md",
-    "docs/AI_SKILLS.md",
-    "docs/CI.md",
-    "docs/CI_RUNNER.md",
-    "docs/SETUP.md",
-    "docs/ARCHITECTURE.md",
-    "docs/OBSERVABILITY.md",
-    "docs/DEPLOYMENT.md",
-    ".mcp.json.example",
-    "docs/BRANCH_PROTECTION.md",
-    "docs/planning/TASK_MANAGEMENT.md",
-    "TEMPLATE_USAGE.md",
-    "config/config.example.yaml",
-    "infra/ci/build-and-push.sh",
-    "infra/hetzner/templates/{{PROJECT_NAME}}.service.j2",
-    "infra/hetzner/templates/{{PROJECT_NAME}}-<job>.service.j2",
-    "infra/hetzner/templates/{{PROJECT_NAME}}-<job>.timer.j2",
-    "infra/home-worker/ci_runner_setup.yml",
-    "scripts/github/setup-branch-protection.sh",
-    "src/__init__.py",
-    "src/logging_config.py",
-    "src/main.py",
-    "src/release_info.py",
-    "tests/__init__.py",
-    "tests/conftest.py",
-    "tests/test_github_mockup_issue_assets.py",
-    "tests/test_logging_config.py",
-    "tests/test_main.py",
-    "tests/test_release_info.py",
-]
+# Directories to skip entirely when scanning for template files.
+SKIP_DIRS: set[str] = {
+    ".git",
+    "venv",
+    ".venv",
+    "__pycache__",
+    "node_modules",
+    ".mypy_cache",
+    ".pytest_cache",
+    "htmlcov",
+    ".tox",
+}
 
-ADDITIONAL_TEMPLATE_DIRS: List[str] = ["ai-skills"]
-
-TEMPLATE_TEXT_SUFFIXES = {
-    ".cfg",
-    ".ini",
-    ".j2",
-    ".json",
-    ".md",
-    ".py",
-    ".sh",
-    ".txt",
-    ".yaml",
-    ".yml",
+# File extensions that are definitely binary — skip without trying.
+BINARY_SUFFIXES: set[str] = {
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".ico",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".pdf",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".pyc",
+    ".pyo",
+    ".so",
+    ".dylib",
+    ".exe",
+    ".bin",
 }
 
 # Directories that may need renaming
@@ -235,26 +217,42 @@ def render_template_assignment_markers(content: str, replacements: Dict[str, str
     return "".join(rendered_lines)
 
 
-def iter_additional_template_files(project_root: Path) -> List[Path]:
-    """Find additional text template files outside the fixed file list.
+def iter_all_template_files(project_root: Path, skip_self: Path) -> Iterator[Path]:
+    """Walk the full project tree and yield candidate text files.
 
-    This keeps canonical AI skills template-aware without requiring every
-    resource file to be named in FILES_TO_PROCESS by hand.
+    Skips generated/venv directories and known binary file types. Every other
+    file is yielded and processed by replace_in_file, which gracefully ignores
+    files that cannot be decoded as UTF-8 or contain no template variables.
+    This avoids the fragile manually-maintained FILES_TO_PROCESS list.
     """
-    template_files: List[Path] = []
-
-    for directory in ADDITIONAL_TEMPLATE_DIRS:
-        base_path = project_root / directory
-        if not base_path.exists():
+    for file_path in sorted(project_root.rglob("*")):
+        if not file_path.is_file():
             continue
-        for file_path in sorted(base_path.rglob("*")):
-            if not file_path.is_file():
-                continue
-            if file_path.suffix not in TEMPLATE_TEXT_SUFFIXES:
-                continue
-            template_files.append(file_path)
+        if file_path.resolve() == skip_self.resolve():
+            continue
+        rel = file_path.relative_to(project_root)
+        # Skip files inside ignored directories (check all parent parts).
+        if any(part in SKIP_DIRS for part in rel.parts[:-1]):
+            continue
+        if file_path.suffix.lower() in BINARY_SUFFIXES:
+            continue
+        yield file_path
 
-    return template_files
+
+def check_remaining_placeholders(project_root: Path, skip_self: Path) -> List[str]:
+    """Return a list of warning lines for any surviving {{...}} placeholders."""
+    pattern = re.compile(r"\{\{[A-Z][A-Z0-9_]+\}\}")
+    warnings: List[str] = []
+    for file_path in iter_all_template_files(project_root, skip_self):
+        try:
+            content = file_path.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        matches = sorted(set(pattern.findall(content)))
+        if matches:
+            rel = file_path.relative_to(project_root)
+            warnings.append(f"  {rel}: {', '.join(matches)}")
+    return warnings
 
 
 def rename_directory(project_root: Path, old_name: str, new_name: str) -> Optional[Path]:
@@ -492,37 +490,13 @@ def main() -> int:  # noqa: C901 - setup flow is intentionally linear and prompt
     print("Applying configuration...")
     print("=" * 60)
 
-    # Process all template files
+    # Process all template files by walking the full project tree.
     modified_count = 0
-    processed_paths: set[Path] = set()
-    for file_rel_path in FILES_TO_PROCESS:
-        file_path = project_root / file_rel_path
-        if file_path.exists():
-            processed_paths.add(file_path.resolve())
-            if replace_in_file(file_path, values):
-                print(f"  Updated: {file_rel_path}")
-                modified_count += 1
-        else:
-            # Try with new directory names
-            new_path = file_rel_path
-            if file_rel_path.startswith("src/"):
-                new_path = file_rel_path.replace("src/", values["SOURCE_DIR"] + "/", 1)
-            elif file_rel_path.startswith("tests/"):
-                new_path = file_rel_path.replace("tests/", values["TEST_DIR"] + "/", 1)
-            file_path = project_root / new_path
-            if file_path.exists():
-                processed_paths.add(file_path.resolve())
-                if replace_in_file(file_path, values):
-                    print(f"  Updated: {new_path}")
-                    modified_count += 1
-
-    for file_path in iter_additional_template_files(project_root):
-        if file_path.resolve() in processed_paths:
-            continue
+    script_path = Path(__file__)
+    for file_path in iter_all_template_files(project_root, script_path):
         if replace_in_file(file_path, values):
             print(f"  Updated: {file_path.relative_to(project_root)}")
             modified_count += 1
-        processed_paths.add(file_path.resolve())
 
     print(f"\n  Modified {modified_count} files")
 
@@ -545,6 +519,14 @@ def main() -> int:  # noqa: C901 - setup flow is intentionally linear and prompt
         print("  Ensured: CLAUDE.md -> AGENTS.md")
     else:
         print("  Warning: CLAUDE.md is not a symlink to AGENTS.md after setup")
+
+    # Warn about any surviving {{...}} placeholders.
+    remaining = check_remaining_placeholders(project_root, script_path)
+    if remaining:
+        print("\n  Warning: unreplaced placeholders found in:")
+        for line in remaining:
+            print(line)
+        print("  These may be GitHub Actions expressions (OK) or missing template vars.")
 
     # Optional: Initialize git repository
     print("\n" + "-" * 60)
