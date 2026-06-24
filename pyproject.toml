@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 127  # TEMPLATE_VAR:MAX_LINE_LENGTH
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py312']
 include = '\.pyi?$'
 exclude = '''
 /(
