@@ -25,7 +25,7 @@ def test_render_template_path_replaces_ai_skill_placeholders() -> None:
     assert rendered == Path("ai-skills/gentle-site-visitor-feature-delivery/skill.yaml")
 
 
-def test_iter_additional_template_files_discovers_ai_skill_text_files(tmp_path: Path) -> None:
+def test_iter_all_template_files_discovers_ai_skill_text_files(tmp_path: Path) -> None:
     skill_dir = tmp_path / "ai-skills" / "{{PROJECT_NAME}}-feature-delivery"
     skill_dir.mkdir(parents=True)
     skill_file = skill_dir / "skill.yaml"
@@ -35,7 +35,10 @@ def test_iter_additional_template_files_discovers_ai_skill_text_files(tmp_path: 
     instruction_file.write_text("# {{PROJECT_NAME}} Feature Delivery", encoding="utf-8")
     binary_file.write_bytes(b"not a template text file")
 
-    discovered = {file_path.relative_to(tmp_path) for file_path in setup_template.iter_additional_template_files(tmp_path)}
+    discovered = {
+        file_path.relative_to(tmp_path)
+        for file_path in setup_template.iter_all_template_files(tmp_path, tmp_path / "setup_template.py")
+    }
 
     assert Path("ai-skills/{{PROJECT_NAME}}-feature-delivery/skill.yaml") in discovered
     assert Path("ai-skills/{{PROJECT_NAME}}-feature-delivery/instructions.md") in discovered
