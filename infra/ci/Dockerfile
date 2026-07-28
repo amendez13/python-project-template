@@ -36,8 +36,8 @@ RUN set -eux; \
       "$py" -m pip install --no-cache-dir --break-system-packages \
         black==26.3.1 \
         isort==5.13.2 \
-        flake8==7.0.0 \
-        mypy==1.8.0 \
+        flake8==7.3.0 \
+        mypy==2.3.0 \
         types-PyYAML \
         bandit==1.7.6 \
         pip-audit==2.7.3 \
