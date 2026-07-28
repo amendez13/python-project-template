@@ -256,7 +256,7 @@ jobs:
           pip install --disable-pip-version-check \
             black==26.3.1 \
             isort==5.13.2 \
-            flake8==7.0.0 \
+            flake8==7.3.0 \
             mypy==2.3.0 \
             "types-PyYAML>=6.0"
           pip install -r requirements.txt
