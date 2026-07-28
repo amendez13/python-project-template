@@ -41,7 +41,7 @@ RUN set -eux; \
         types-PyYAML \
         bandit==1.7.6 \
         pip-audit==2.7.3 \
-        pytest==9.0.3 \
+        pytest==9.1.1 \
         pytest-cov==7.1.0 \
         pytest-mock==3.15.1 \
         PyYAML; \
