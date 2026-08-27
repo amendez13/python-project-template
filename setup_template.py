@@ -68,8 +68,8 @@ TEMPLATE_VARS: Dict[str, Dict[str, str]] = {
         "description": "Development branch name",
     },
     "CI_RUNNER": {
-        "default": "github_hosted",
-        "description": "Default CI runner target (github_hosted, self_hosted_linux, self_hosted_linux_arm64)",
+        "default": "fargate",
+        "description": "Default CI runner target (fargate, github_hosted, self_hosted_linux, self_hosted_linux_arm64)",
     },
     "YEAR": {
         "default": str(datetime.date.today().year),

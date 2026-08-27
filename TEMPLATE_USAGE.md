@@ -49,7 +49,7 @@ If you prefer to configure manually:
 | `{{TEST_DIR}}` | Test directory name | `tests` |
 | `{{MAIN_BRANCH}}` | Main branch name | `main` |
 | `{{DEV_BRANCH}}` | Development branch name | `develop` |
-| `{{CI_RUNNER}}` | Default CI runner target | `github_hosted` |
+| `{{CI_RUNNER}}` | Default CI runner target | `fargate` |
 
 `{{MAX_LINE_LENGTH}}` defaults to `127` because it aligns with the template's Black-based formatting and reduces unnecessary wrapping noise in pull requests on modern editor widths.
 
@@ -149,13 +149,12 @@ python-project-template/
 
 ### CI/CD Pipeline (`.github/workflows/ci.yml`)
 
-- **Resolve-runner job**: Selects GitHub-hosted vs self-hosted labels and skip mode
-- **Lint job**: Black, isort, flake8, mypy in the shared CI image
-- **Test job**: pytest across Python 3.10, 3.11, 3.12 after coverage passes
-- **Coverage job**: Enforces coverage threshold with HTML reports
+- **Resolve-runner job**: Selects Fargate, GitHub-hosted, or persistent self-hosted labels and skip mode
+- **Lint job**: Black, isort, flake8, and mypy on the resolved native runner
+- **Test job**: pytest on Python 3.12 with the coverage threshold and HTML reports
 - **Security job**: bandit and pip-audit scanning
 - **Secret-scanning workflow**: gitleaks on pushes, PRs, and manual dispatch
-- **Config validation**: YAML and Python syntax checks
+- **Config validation**: YAML and Python syntax checks in the lint job
 - **Smart skip logic**: docs-only diffs and merged-PR pushes to `main` skip heavy jobs but still report `CI Status Check`
 
 ### Docker CI Environment (`infra/ci/`)
@@ -164,12 +163,12 @@ python-project-template/
 - **docker-compose.ci.yml**: Local shell into the same environment GitHub Actions uses
 - **build-and-push.sh**: Manual multi-platform build helper for GHCR
 
-### Self-Hosted Runner Support
+### Runner Support
 
 - **resolve-runner** output drives `runs-on: ${{ fromJSON(...) }}` in CI
-- **CI_RUNNER** template variable sets the default runner target
+- **CI_RUNNER** template variable sets the default runner target; it defaults to ephemeral Fargate
 - **infra/home-worker/ci_runner_setup.yml** provides a Linux runner bootstrap skeleton
-- **docs/CI_RUNNER.md** explains GitHub-hosted vs self-hosted usage and runner-as-contract guidance
+- **docs/CI_RUNNER.md** explains Fargate activation plus GitHub-hosted and persistent self-hosted fallbacks
 
 ### Release Workflow Skeleton
 
@@ -279,9 +278,9 @@ cp .mcp.json.example .mcp.json
 
 Then customize `.mcp.json` for your own servers and credentials. The real `.mcp.json` stays ignored by git.
 
-### CI Image Bootstrap
+### Optional CI Image
 
-Before requiring the new containerized CI contexts in branch protection, publish the shared CI image at least once:
+Fargate CI installs tools directly and does not require the shared CI image. Publish it only when you want the optional local or persistent self-hosted container environment:
 
 ```bash
 ./infra/ci/build-and-push.sh
@@ -312,6 +311,7 @@ After running `setup_template.py`:
 3. **Configure GitHub** (if using Claude workflows):
    - Add `CLAUDE_CODE_OAUTH_TOKEN` secret to repository
    - Enable GitHub Actions
+   - Authorize the repository on the shared Fargate runner App, or select `github_hosted` during setup
    - Review `docs/SECURITY_BASELINE.md` and enable GitHub secret scanning, push protection, and CodeQL where available
 
 4. **Start developing**:
@@ -362,7 +362,8 @@ The template includes both `config/config.example.yaml` and `.env.example`.
 ### CI Runner Target
 
 - `{{CI_RUNNER}}` controls the default runner target used by `.github/workflows/ci.yml`.
-- Supported values are `github_hosted`, `self_hosted_linux`, and `self_hosted_linux_arm64`.
+- Supported values are `fargate`, `github_hosted`, `self_hosted_linux`, and `self_hosted_linux_arm64`.
+- Before using `fargate`, authorize the generated repository on the shared runner GitHub App as described in `docs/CI_RUNNER.md`.
 - Keep the workflow, `docs/CI_RUNNER.md`, and any self-hosted runner bootstrap playbooks aligned if you change the labels or targets.
 
 ## Troubleshooting

@@ -4,11 +4,11 @@ This template includes a baseline repository-security setup so new projects get 
 
 ## Included In The Template
 
-- `.github/workflows/gitleaks.yml` scans the full git history on `push`, `pull_request`, and `workflow_dispatch`.
+- `.github/workflows/gitleaks.yml` scans the full git history on `push`, `pull_request`, and `workflow_dispatch` using an ephemeral `[self-hosted, fargate]` runner.
 - `.pre-commit-config.yaml` includes an official `gitleaks` hook so obvious leaks are caught before they are pushed.
 - `.github/workflows/ci.yml` continues to run `bandit` and `pip-audit` for application-level and dependency-level checks.
 
-The `gitleaks` workflow installs a pinned upstream binary, verifies its SHA-256 checksum, redacts findings in logs, and writes a redacted SARIF report. The workflow always uploads the SARIF file as an artifact and attempts a best-effort upload to GitHub code scanning where that feature is available for the repository.
+The `gitleaks` workflow installs a pinned upstream binary into its workspace, verifies its SHA-256 checksum, redacts findings in logs, and writes a redacted SARIF report. It does not require `sudo`. The workflow always uploads the SARIF file as an artifact and attempts a best-effort upload to GitHub code scanning where that feature is available for the repository.
 
 ## Recommended GitHub Features To Enable
 

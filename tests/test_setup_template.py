@@ -7,6 +7,23 @@ from pathlib import Path
 import setup_template
 
 
+def test_fargate_is_the_default_ci_runner() -> None:
+    assert setup_template.TEMPLATE_VARS["CI_RUNNER"]["default"] == "fargate"
+
+
+def test_ci_and_secret_scanning_workflows_support_fargate() -> None:
+    project_root = Path(setup_template.__file__).parent
+    ci_workflow = (project_root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    secret_workflow = (project_root / ".github/workflows/gitleaks.yml").read_text(encoding="utf-8")
+
+    assert 'runner=["self-hosted","fargate"]' in ci_workflow
+    assert "runs-on: [self-hosted, fargate]" in ci_workflow
+    assert "    container:" not in ci_workflow
+    assert "runs-on: [self-hosted, fargate]" in secret_workflow
+    assert "./gitleaks git ." in secret_workflow
+    assert "sudo " not in secret_workflow
+
+
 def test_render_template_path_replaces_placeholders() -> None:
     rendered = setup_template.render_template_path(
         Path("infra/hetzner/templates/{{PROJECT_NAME}}.service.j2"),

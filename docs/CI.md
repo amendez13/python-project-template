@@ -1,10 +1,10 @@
 # CI/CD Pipeline Documentation
 
-This document describes the Continuous Integration pipeline for {{PROJECT_NAME}}, including the Docker CI image, runner-resolution workflow, the companion secret-scanning workflow, and the local validation path that mirrors GitHub Actions.
+This document describes the Continuous Integration pipeline for {{PROJECT_NAME}}, including ephemeral Fargate runners, runner resolution, the companion secret-scanning workflow, and local validation.
 
 ## Overview
 
-The CI workflow runs on pushes and pull requests targeting `{{MAIN_BRANCH}}` and `{{DEV_BRANCH}}`. It now uses a shared Docker image for the real checks instead of installing tools independently in every job.
+The CI workflow runs on pushes and pull requests targeting `{{MAIN_BRANCH}}` and `{{DEV_BRANCH}}`. New projects default to ephemeral ECS Fargate runners and install their Python toolchain directly in each job. GitHub-hosted and persistent self-hosted runners remain manual fallbacks.
 
 ## CI Jobs (`.github/workflows/ci.yml`)
 
@@ -13,11 +13,12 @@ The CI workflow runs on pushes and pull requests targeting `{{MAIN_BRANCH}}` and
 - `resolve-runner` decides which runner labels downstream jobs should use.
 - The default target comes from `{{CI_RUNNER}}`.
 - Manual `workflow_dispatch` runs can override the target with:
+  - `fargate`
   - `github_hosted`
   - `self_hosted_linux`
   - `self_hosted_linux_arm64`
 - Downstream jobs use `runs-on: ${{ fromJSON(needs.resolve-runner.outputs.runner) }}`.
-- `resolve-runner` also emits `container.options` for self-hosted runs so containerized jobs keep workspace file ownership compatible with the runner user.
+- `fargate` resolves to `[self-hosted, fargate]`; one ephemeral runner task claims one queued job and exits.
 
 ### Smart Skip Logic
 
@@ -29,54 +30,45 @@ The CI workflow runs on pushes and pull requests targeting `{{MAIN_BRANCH}}` and
 
 The aggregate `CI Status Check` job still runs and reports the skip reason, so the skip path is explicit rather than a silent green pass.
 
-### Container Execution Model
+### Fargate-Native Execution Model
 
-All CI jobs except `resolve-runner` execute in the same image:
+Main CI jobs execute directly on the resolved runner:
 
-- `ghcr.io/{{GITHUB_OWNER}}/{{PROJECT_NAME}}-ci:latest`
-- multi-platform manifest: `linux/amd64` and `linux/arm64`
 - checkout path isolation via `path: repo`
-- `safe.directory` configured in every container job
-- no per-job `actions/setup-python`
-- Python matrix jobs call preinstalled interpreters directly (`python3.10`, `python3.11`, `python3.12`)
+- `safe.directory` configured in every job
+- `actions/setup-python` selects the requested Python version
+- dependencies and pinned security tools are installed per job
+
+Fargate runners do not provide nested Docker job containers, so the main workflow must not use a top-level `container:` block. The shared CI image under `infra/ci/` remains available for local checks and non-Fargate runners; its image-publish workflow stays GitHub-hosted because the Fargate runner cannot run Docker-in-Docker builds.
 
 ### Failure Short-Circuiting
 
 - workflow concurrency cancels stale pull-request runs on new pushes
-- `coverage` runs before the Python matrix, so low coverage fails before the full matrix fan-out
-- the Python matrix uses `fail-fast: true`
-- each container job requests workflow cancellation via the Actions API if it fails
+- the Python 3.12 test job enforces coverage in the same run
+- each check job requests workflow cancellation via the Actions API if it fails
 
 ## Job Summary
 
 ### 1. Resolve Runner Target
 
-Purpose: choose the runner labels, container options, CI image reference, and skip mode.
+Purpose: choose the runner labels and skip mode.
 
 ### 2. Lint and Code Quality
 
-Purpose: run black, isort, flake8, and mypy.
+Purpose: run black, isort, flake8, mypy, YAML validation, and Python syntax checks.
 
 Implementation detail:
 - uses a pinned lint-only virtual environment so lint versions stay stable even if the shared image tag moves forward
 
-### 3. Coverage Check
+### 3. Test Python 3.12
 
-Purpose: enforce the `{{COVERAGE_THRESHOLD}}%` coverage gate and publish the HTML coverage artifact.
+Purpose: run pytest, enforce the `{{COVERAGE_THRESHOLD}}%` coverage gate, and publish the HTML coverage artifact.
 
-### 4. Test Python 3.10 / 3.11 / 3.12
+### 4. Security Checks
 
-Purpose: run the correctness matrix after the coverage gate passes.
+Purpose: install pinned bandit and pip-audit versions and run both checks.
 
-### 5. Security Checks
-
-Purpose: run bandit and pip-audit in the shared CI image.
-
-### 6. Validate Configuration
-
-Purpose: validate YAML configuration and Python syntax.
-
-### 7. CI Status Check
+### 5. CI Status Check
 
 Purpose: aggregate job outcomes and publish the final required status, including intentional skip reasons.
 
@@ -86,16 +78,18 @@ The template also includes a dedicated `Secret Scanning` workflow for repository
 
 - triggers on `push`, `pull_request`, and `workflow_dispatch`
 - checks out the full git history with `fetch-depth: 0`
+- runs on an ephemeral `[self-hosted, fargate]` runner
 - installs a pinned `gitleaks` release and verifies its checksum
+- executes the workspace binary directly without `sudo`
 - generates a redacted SARIF report
 - uploads the redacted SARIF artifact on every run
 - attempts a best-effort upload to GitHub code scanning when the repository supports SARIF ingestion
 
-This workflow is separate from `ci.yml` because secret scanning has different runtime and reporting needs than the containerized application checks.
+This workflow is separate from `ci.yml` because secret scanning has different runtime and reporting needs than application checks.
 
-## CI Image Workflow (`.github/workflows/ci-image.yml`)
+## Optional CI Image Workflow (`.github/workflows/ci-image.yml`)
 
-The CI image workflow rebuilds and publishes the shared image when these inputs change:
+The CI image workflow rebuilds and publishes the optional local/self-hosted image when these inputs change:
 
 - `infra/ci/Dockerfile`
 - `requirements.txt`
@@ -145,26 +139,25 @@ gitleaks dir . --no-banner --redact=100
 gitleaks git . --no-banner --redact=100
 ```
 
-## Containerized CI Architecture
+## CI Architecture
 
 ```mermaid
 flowchart LR
     A["push / pull_request / workflow_dispatch"] --> B["resolve-runner"]
     B --> B1{"merged PR push or docs-only diff?"}
     B1 -- Yes --> H["CI Status Check"]
-    B1 -- No --> C["containerized jobs"]
-    C --> D["Coverage Check"]
-    C --> E["Lint / Security / Validate Configuration"]
-    D --> F["Test matrix: Python 3.10 / 3.11 / 3.12"]
+    B1 -- No --> C["native jobs on ephemeral Fargate runners"]
+    C --> D["Test Python 3.12 + coverage"]
+    C --> E["Lint / config validation / security"]
     D --> G["coverage.xml + htmlcov + Codecov"]
     E --> H
-    F --> H
+    D --> H
     G --> H
 
-    I["ci-image.yml"] --> J["Build ghcr.io/{{GITHUB_OWNER}}/{{PROJECT_NAME}}-ci"]
+    I["optional ci-image.yml"] --> J["Build ghcr.io/{{GITHUB_OWNER}}/{{PROJECT_NAME}}-ci on GitHub-hosted runner"]
     J --> K["linux/amd64 + linux/arm64"]
     K --> L["latest + sha tags"]
-    L --> C
+    L --> M["local / persistent self-hosted validation"]
 ```
 
 ## Configuration Files
@@ -172,8 +165,8 @@ flowchart LR
 | File | Purpose |
 |------|---------|
 | `.github/workflows/ci.yml` | Main CI workflow |
-| `.github/workflows/ci-image.yml` | CI image build/publish workflow |
-| `.github/workflows/gitleaks.yml` | Repository secret-scanning workflow |
+| `.github/workflows/ci-image.yml` | Optional CI image build/publish workflow |
+| `.github/workflows/gitleaks.yml` | Fargate repository secret-scanning workflow |
 | `infra/ci/Dockerfile` | Shared CI image definition |
 | `infra/ci/docker-compose.ci.yml` | Local container shell matching CI |
 | `infra/ci/build-and-push.sh` | Manual multi-arch build/push helper |

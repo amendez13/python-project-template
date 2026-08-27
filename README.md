@@ -122,10 +122,12 @@ Baseline checks run automatically via pre-commit hooks and GitHub Actions.
 GitHub Actions runs the following checks on every push and PR:
 
 1. **Lint**: Black, isort, flake8, mypy
-2. **Test**: pytest across Python {{PYTHON_VERSIONS}}
+2. **Test**: pytest on Python 3.12 with coverage enforcement
 3. **Coverage**: {{COVERAGE_THRESHOLD}}% minimum coverage
 4. **Security**: bandit and pip-audit
 5. **Secret scanning**: gitleaks against repository history with redacted reporting
+
+The generated workflow defaults to ephemeral ECS Fargate runners. Select `github_hosted` during template setup when the target account is not connected to the shared Fargate runner App.
 
 See [docs/CI.md](docs/CI.md) for details.
 
