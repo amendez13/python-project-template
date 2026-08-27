@@ -160,12 +160,12 @@ python-project-template/
 ### Docker CI Environment (`infra/ci/`)
 
 - **Dockerfile**: Ubuntu 24.04 CI image with Python 3.10, 3.11, and 3.12 plus preinstalled CI tooling
-- **docker-compose.ci.yml**: Local shell into the same environment GitHub Actions uses
+- **docker-compose.ci.yml**: Optional multi-version local CI shell; native GitHub Actions jobs create fresh per-job Python environments
 - **build-and-push.sh**: Manual multi-platform build helper for GHCR
 
 ### Runner Support
 
-- **resolve-runner** output drives `runs-on: ${{ fromJSON(...) }}` in CI
+- **resolve-runner** starts on the labels selected during setup, and its output drives downstream `runs-on: ${{ fromJSON(...) }}` values
 - **CI_RUNNER** template variable sets the default runner target; it defaults to ephemeral Fargate
 - **infra/home-worker/ci_runner_setup.yml** provides a Linux runner bootstrap skeleton
 - **docs/CI_RUNNER.md** explains Fargate activation plus GitHub-hosted and persistent self-hosted fallbacks

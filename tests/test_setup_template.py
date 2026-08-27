@@ -11,18 +11,44 @@ def test_fargate_is_the_default_ci_runner() -> None:
     assert setup_template.TEMPLATE_VARS["CI_RUNNER"]["default"] == "fargate"
 
 
-def test_ci_and_secret_scanning_workflows_support_fargate() -> None:
+def test_ci_and_secret_scanning_workflows_use_configured_runner() -> None:
     project_root = Path(setup_template.__file__).parent
     ci_workflow = (project_root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     secret_workflow = (project_root / ".github/workflows/gitleaks.yml").read_text(encoding="utf-8")
 
     assert 'runner=["self-hosted","fargate"]' in ci_workflow
+    assert ci_workflow.count("# TEMPLATE_VAR:CI_RUNNER_LABELS") == 1
     assert "runs-on: [self-hosted, fargate]" in ci_workflow
     assert "    container:" not in ci_workflow
     assert '.lint-venv/bin/python -c "' in ci_workflow
+    assert secret_workflow.count("# TEMPLATE_VAR:CI_RUNNER_LABELS") == 1
     assert "runs-on: [self-hosted, fargate]" in secret_workflow
     assert "./gitleaks git ." in secret_workflow
     assert "sudo " not in secret_workflow
+
+
+def test_ci_runner_labels_cover_every_supported_target() -> None:
+    assert setup_template.resolve_ci_runner_labels("fargate") == "[self-hosted, fargate]"
+    assert setup_template.resolve_ci_runner_labels("github_hosted") == "ubuntu-latest"
+    assert setup_template.resolve_ci_runner_labels("self_hosted_linux") == "[self-hosted, linux]"
+    assert setup_template.resolve_ci_runner_labels("self_hosted_linux_arm64") == "[self-hosted, linux, arm64]"
+    assert setup_template.resolve_ci_runner_labels("unknown") == "[self-hosted, fargate]"
+
+
+def test_runner_marker_renders_selected_bootstrap_runner(tmp_path: Path) -> None:
+    workflow = tmp_path / "workflow.yml"
+    workflow.write_text(
+        "jobs:\n  check:\n    # TEMPLATE_VAR:CI_RUNNER_LABELS\n    runs-on: [self-hosted, fargate]\n",
+        encoding="utf-8",
+    )
+
+    replaced = setup_template.replace_in_file(
+        workflow,
+        {"CI_RUNNER_LABELS": setup_template.resolve_ci_runner_labels("github_hosted")},
+    )
+
+    assert replaced is True
+    assert workflow.read_text(encoding="utf-8") == "jobs:\n  check:\n    runs-on: ubuntu-latest\n"
 
 
 def test_render_template_path_replaces_placeholders() -> None:

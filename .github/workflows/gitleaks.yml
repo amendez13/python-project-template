@@ -21,6 +21,7 @@ env:
 jobs:
   gitleaks:
     name: Secret Scanning
+    # TEMPLATE_VAR:CI_RUNNER_LABELS
     runs-on: [self-hosted, fargate]
     steps:
       - name: Checkout code

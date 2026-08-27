@@ -64,7 +64,7 @@ Verify the first workflow run is claimed by a runner named `fargate-<job-id>` be
   - `self_hosted_linux`
   - `self_hosted_linux_arm64`
 
-Downstream jobs consume `runs-on: ${{ fromJSON(needs.resolve-runner.outputs.runner) }}`. The `Secret Scanning` workflow uses `[self-hosted, fargate]` directly so Gitleaks follows the same runner policy.
+The resolver and `Secret Scanning` job use the bootstrap labels selected by `CI_RUNNER` during template setup. Downstream CI jobs consume `runs-on: ${{ fromJSON(needs.resolve-runner.outputs.runner) }}`, allowing a manual dispatch to target another configured runner once the bootstrap runner is available.
 
 ## Register A Self-Hosted Runner
 
@@ -88,7 +88,7 @@ docker build -t {{PROJECT_NAME}}-ci:test -f infra/ci/Dockerfile .
 docker compose -f infra/ci/docker-compose.ci.yml run --rm ci bash
 ```
 
-Inside the container, run the same commands CI uses:
+Inside the container, run checks equivalent to the native CI commands. Tool and base-image versions can differ because GitHub Actions creates fresh per-job Python environments:
 
 ```bash
 python3.12 -m pytest {{TEST_DIR}}/ -v --cov={{SOURCE_DIR}}
@@ -108,5 +108,5 @@ pip-audit --requirement requirements.txt
 
 - If you rename CI jobs, update the required status contexts in `scripts/github/branch-protection-config.json`.
 - If you change runner labels, keep `docs/CI_RUNNER.md`, `infra/home-worker/ci_runner_setup.yml`, and `.github/workflows/ci.yml` aligned.
-- Keep `.github/workflows/gitleaks.yml` on the Fargate labels and avoid `sudo`; the ephemeral runner executes the downloaded binary from its workspace.
+- Keep `.github/workflows/gitleaks.yml` on the configured bootstrap labels and avoid `sudo`; the runner executes the downloaded binary from its workspace.
 - If you change the optional shared toolchain, rebuild the CI image before using it locally or on a persistent runner.

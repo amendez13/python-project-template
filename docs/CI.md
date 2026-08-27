@@ -11,6 +11,7 @@ The CI workflow runs on pushes and pull requests targeting `{{MAIN_BRANCH}}` and
 ### Runner Resolution
 
 - `resolve-runner` decides which runner labels downstream jobs should use.
+- The resolver itself runs on the bootstrap labels selected during template setup, so a configured GitHub-hosted or persistent self-hosted fallback does not depend on Fargate.
 - The default target comes from `{{CI_RUNNER}}`.
 - Manual `workflow_dispatch` runs can override the target with:
   - `fargate`
@@ -78,7 +79,7 @@ The template also includes a dedicated `Secret Scanning` workflow for repository
 
 - triggers on `push`, `pull_request`, and `workflow_dispatch`
 - checks out the full git history with `fetch-depth: 0`
-- runs on an ephemeral `[self-hosted, fargate]` runner
+- runs on the runner selected during template setup (`[self-hosted, fargate]` by default)
 - installs a pinned `gitleaks` release and verifies its checksum
 - executes the workspace binary directly without `sudo`
 - generates a redacted SARIF report
@@ -107,7 +108,7 @@ Published platforms:
 
 ## Local Validation
 
-### Run the same CI image locally
+### Run the optional CI image locally
 
 ```bash
 docker build -t {{PROJECT_NAME}}-ci:test -f infra/ci/Dockerfile .
@@ -126,6 +127,8 @@ mypy --version
 pytest --version
 python3.12 -m pytest {{TEST_DIR}}/ -v --cov={{SOURCE_DIR}}
 ```
+
+This image is a convenient multi-version local toolchain. It is not identical to the native GitHub Actions environment, which installs dependencies into fresh per-job environments.
 
 ### Run the repository checks without Docker
 

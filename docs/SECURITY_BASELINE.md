@@ -4,7 +4,7 @@ This template includes a baseline repository-security setup so new projects get 
 
 ## Included In The Template
 
-- `.github/workflows/gitleaks.yml` scans the full git history on `push`, `pull_request`, and `workflow_dispatch` using an ephemeral `[self-hosted, fargate]` runner.
+- `.github/workflows/gitleaks.yml` scans the full git history on `push`, `pull_request`, and `workflow_dispatch` using the runner selected during template setup (ephemeral Fargate by default).
 - `.pre-commit-config.yaml` includes an official `gitleaks` hook so obvious leaks are caught before they are pushed.
 - `.github/workflows/ci.yml` continues to run `bandit` and `pip-audit` for application-level and dependency-level checks.
 

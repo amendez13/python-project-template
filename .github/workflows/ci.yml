@@ -38,6 +38,7 @@ env:
 jobs:
   resolve-runner:
     name: Resolve Runner Target
+    # TEMPLATE_VAR:CI_RUNNER_LABELS
     runs-on: [self-hosted, fargate]
     outputs:
       runner: ${{ steps.pick.outputs.runner }}
