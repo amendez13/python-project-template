@@ -68,13 +68,20 @@ TEMPLATE_VARS: Dict[str, Dict[str, str]] = {
         "description": "Development branch name",
     },
     "CI_RUNNER": {
-        "default": "github_hosted",
-        "description": "Default CI runner target (github_hosted, self_hosted_linux, self_hosted_linux_arm64)",
+        "default": "fargate",
+        "description": "Default CI runner target (fargate, github_hosted, self_hosted_linux, self_hosted_linux_arm64)",
     },
     "YEAR": {
         "default": str(datetime.date.today().year),
         "description": "Copyright year (used in LICENSE)",
     },
+}
+
+CI_RUNNER_LABELS: Dict[str, str] = {
+    "fargate": "[self-hosted, fargate]",
+    "github_hosted": "ubuntu-latest",
+    "self_hosted_linux": "[self-hosted, linux]",
+    "self_hosted_linux_arm64": "[self-hosted, linux, arm64]",
 }
 
 # Directories to skip entirely when scanning for template files.
@@ -149,7 +156,14 @@ def collect_variables() -> Dict[str, str]:
         print(f"\n{var_info['description']}")
         values[var_name] = get_input(f"  {var_name}", var_info["default"])
 
+    values["CI_RUNNER_LABELS"] = resolve_ci_runner_labels(values["CI_RUNNER"])
+
     return values
+
+
+def resolve_ci_runner_labels(target: str) -> str:
+    """Return the workflow ``runs-on`` value for a configured CI target."""
+    return CI_RUNNER_LABELS.get(target, CI_RUNNER_LABELS["fargate"])
 
 
 def replace_in_file(file_path: Path, replacements: Dict[str, str]) -> bool:
@@ -205,6 +219,11 @@ def render_template_assignment_markers(content: str, replacements: Dict[str, str
         if pending_var is not None:
             value = replacements.get(pending_var)
             assignment = re.match(r"(?P<prefix>\s*[^#\n=]+=\s*)(?P<current>.*?)(?P<newline>\n?)$", line)
+            if assignment is None:
+                assignment = re.match(
+                    r"(?P<prefix>\s*[A-Za-z0-9_-]+:\s*)(?P<current>.*?)(?P<newline>\n?)$",
+                    line,
+                )
             if assignment is not None and value is not None:
                 rendered_lines.append(f"{assignment.group('prefix')}{value}{assignment.group('newline')}")
             else:

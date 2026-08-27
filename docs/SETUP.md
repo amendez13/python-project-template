@@ -152,6 +152,10 @@ After the repository exists on GitHub, review and enable the baseline security f
 
 These features are configured in GitHub, not in the local bootstrap commands above.
 
+### Activate The CI Runner
+
+The template defaults to ephemeral Fargate CI. Before the first workflow run, authorize the repository on the shared runner GitHub App using the `gh` command in [CI_RUNNER.md](CI_RUNNER.md). If the repository cannot use that infrastructure, choose `github_hosted` for `CI_RUNNER` when running `setup_template.py`.
+
 ### Deploy AI Skills
 
 The template ships canonical AI skill sources under `ai-skills/` and a deploy flow that renders them to both Claude and Codex:

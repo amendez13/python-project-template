@@ -44,8 +44,8 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Starter skills and local deploy workflow
 
 **[CI_RUNNER.md](CI_RUNNER.md)**
-- Self-hosted runner setup and operations
-- Docker CI image contract and runner-target guidance
+- Fargate App activation and ephemeral-runner operations
+- GitHub-hosted and persistent self-hosted fallback guidance
 
 **[OBSERVABILITY.md](OBSERVABILITY.md)**
 - Structured logging and operator observability patterns
@@ -109,8 +109,8 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 - Post-creation GitHub security features to enable
 
 **[CI_RUNNER.md](CI_RUNNER.md)**
-- GitHub-hosted vs self-hosted runner guidance
-- Docker CI image contract and local parity workflow
+- Fargate, GitHub-hosted, and persistent self-hosted runner guidance
+- Optional local CI-image workflow
 - Runner registration and label alignment notes
 
 **[OBSERVABILITY.md](OBSERVABILITY.md)**
@@ -181,7 +181,7 @@ Welcome to the {{PROJECT_NAME}} documentation. This index provides easy access t
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Technical architecture and design | Developers |
 | [CI.md](CI.md) | CI/CD pipeline and development workflow | Developers |
 | [SECURITY_BASELINE.md](SECURITY_BASELINE.md) | Secret scanning baseline and GitHub security setup | Developers, operators |
-| [CI_RUNNER.md](CI_RUNNER.md) | Self-hosted runner operations and CI image contract | Developers, operators |
+| [CI_RUNNER.md](CI_RUNNER.md) | Fargate activation and CI runner operations | Developers, operators |
 | [OBSERVABILITY.md](OBSERVABILITY.md) | Logging, health, Loki, and operator runbook patterns | Developers, operators |
 | [RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md) | Release deployment automation guide | Developers, operators |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment conventions plus runbook and rollback notes | Developers, operators |
