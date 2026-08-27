@@ -277,7 +277,7 @@ jobs:
 
       - name: Validate YAML configuration files
         run: |
-          python3.12 -c "
+          .lint-venv/bin/python -c "
           import sys
           import yaml
 
@@ -291,7 +291,7 @@ jobs:
           "
 
       - name: Check Python syntax
-        run: find {{SOURCE_DIR}} -name '*.py' -exec python3.12 -m py_compile {} +
+        run: find {{SOURCE_DIR}} -name '*.py' -exec .lint-venv/bin/python -m py_compile {} +
 
       - name: Cancel workflow after lint failure
         if: failure()

@@ -19,6 +19,7 @@ def test_ci_and_secret_scanning_workflows_support_fargate() -> None:
     assert 'runner=["self-hosted","fargate"]' in ci_workflow
     assert "runs-on: [self-hosted, fargate]" in ci_workflow
     assert "    container:" not in ci_workflow
+    assert '.lint-venv/bin/python -c "' in ci_workflow
     assert "runs-on: [self-hosted, fargate]" in secret_workflow
     assert "./gitleaks git ." in secret_workflow
     assert "sudo " not in secret_workflow
