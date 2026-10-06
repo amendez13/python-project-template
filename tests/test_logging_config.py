@@ -69,6 +69,15 @@ class TestJSONFormatter:
         assert payload["event"] == "task_started"
         assert payload["queue"] == "default"
 
+    def test_extra_fields_cannot_replace_correlation_context(self) -> None:
+        set_log_context(session_id="trusted-session")
+        record = self._make_record()
+        record.session_id = "extra-session"  # type: ignore[attr-defined]
+
+        payload = json.loads(JSONFormatter().format(record))
+
+        assert payload["session_id"] == "trusted-session"
+
     def test_includes_exception_details(self) -> None:
         logger = logging.getLogger("test.exc")
         try:
