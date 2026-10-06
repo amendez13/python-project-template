@@ -4,6 +4,13 @@ This document describes the Continuous Integration pipeline for {{PROJECT_NAME}}
 
 ## Overview
 
+The source template repository also runs `Template Validation` on `main` pushes
+and pull requests. It runs every test in `tests/`, enforces 95% coverage of `src/`,
+and runs every pre-commit hook on Python 3.12. This concrete workflow validates
+dependency updates before the template placeholders have been rendered. Its job
+is restricted to `amendez13/python-project-template`; generated projects use the
+configured application workflow described below.
+
 The CI workflow runs on pushes and pull requests targeting `{{MAIN_BRANCH}}` and `{{DEV_BRANCH}}`. New projects default to ephemeral ECS Fargate runners and install their Python toolchain directly in each job. GitHub-hosted and persistent self-hosted runners remain manual fallbacks.
 
 ## CI Jobs (`.github/workflows/ci.yml`)

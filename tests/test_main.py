@@ -2,7 +2,25 @@
 
 from tests.module_loader import import_source_module
 
-greet = import_source_module("main").greet
+main_module = import_source_module("main")
+greet = main_module.greet
+
+
+def test_main_reports_startup_and_greeting(monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
+    from unittest.mock import Mock
+
+    configure = Mock()
+    logger = Mock()
+    release = {"tag": "v1.2.3", "source": "env"}
+    monkeypatch.setattr(main_module, "configure_logging", configure)
+    monkeypatch.setattr(main_module, "LOGGER", logger)
+    monkeypatch.setattr(main_module, "get_release_info", lambda: release)
+
+    main_module.main()
+
+    configure.assert_called_once_with()
+    logger.info.assert_called_once_with("Application startup", extra={"event": "startup", "release": release})
+    assert capsys.readouterr().out == "Hello, World!\n"
 
 
 class TestGreet:
