@@ -5,9 +5,35 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from tests.module_loader import import_source_module
 
 release_info_module = import_source_module("release_info")
+
+
+@pytest.mark.parametrize("error", [OSError("git unavailable"), release_info_module.subprocess.TimeoutExpired("git", 5)])
+def test_git_output_handles_unavailable_git(monkeypatch, error) -> None:  # type: ignore[no-untyped-def]
+    def fail(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise error
+
+    monkeypatch.setattr(release_info_module.subprocess, "run", fail)
+    assert release_info_module._git_output("rev-parse", "HEAD") is None
+
+
+@pytest.mark.parametrize("version", [None, " \n"])
+def test_get_release_info_without_release_metadata(  # type: ignore[no-untyped-def]
+    monkeypatch, tmp_path: Path, version
+) -> None:
+    monkeypatch.delenv("RELEASE_TAG", raising=False)
+    monkeypatch.delenv("RELEASE_COMMIT", raising=False)
+    monkeypatch.setattr(release_info_module, "_git_output", lambda *args: None)
+    version_file = tmp_path / "VERSION"
+    if version is not None:
+        version_file.write_text(version, encoding="utf-8")
+    monkeypatch.setattr(release_info_module, "_VERSION_FILE", version_file)
+
+    assert release_info_module.get_release_info() == {"tag": None, "commit": None, "short_commit": None, "source": "unknown"}
 
 
 def test_get_release_info_prefers_environment(monkeypatch) -> None:  # type: ignore[no-untyped-def]
